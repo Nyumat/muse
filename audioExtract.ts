@@ -4,17 +4,18 @@ import { exec } from "child_process";
 import crypto from "crypto";
 import fs from "fs/promises";
 import { IPicture, parseBuffer } from "music-metadata";
+import { revalidatePath } from "next/cache";
 import path from "path";
 import { createClient } from "./lib/supabase/server";
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
- * Downloads a YouTube video as MP3 using yt-dlp and uploads it to Supabase.
+ * Downloads a YouTube video or Sound Cloud track as MP3 using yt-dlp and uploads it to Supabase.
  * @param {string} url - The URL of the YouTube video.
  * @param {string} outputDir - The directory where the MP3 file will be saved.
  */
-export async function downloadYouTubeAudio(
+export async function downloadAudio(
   url: string,
   outputDir: string = "./downloads"
 ) {
@@ -188,7 +189,7 @@ export async function downloadYouTubeAudio(
             console.error(`Error processing file ${file}:`, processError);
           }
         }
-
+        revalidatePath("/platform");
         resolve(true);
       } catch (error) {
         console.error("Error processing files:", error);

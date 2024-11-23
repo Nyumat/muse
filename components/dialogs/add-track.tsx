@@ -1,6 +1,6 @@
 "use client";
 
-import { downloadYouTubeAudio } from "@/audioExtract";
+import { downloadAudio } from "@/audioExtract";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,11 +16,12 @@ import { Input } from "@/components/ui/input";
 import { useCallback, useState } from "react";
 
 export function AddTrackDialog() {
-    const [youtubeLink, setYoutubeLink] = useState("");
-    const [open, setOpen] = useState(false);
-    const [error, setError] = useState("");
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/;
+  const [youtubeLink, setYoutubeLink] = useState("");
+  const [open, setOpen] = useState(false);
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/;
+  const soundCloudRegex = /^(https?:\/\/)?(www\.)?(soundcloud\.com)\/.+$/;
 
   const validateYoutubeLink = useCallback((link: string) => {
     if (!link) {
@@ -32,6 +33,18 @@ export function AddTrackDialog() {
     return "";
   }, []);
 
+  const validateSoundCloudLink = useCallback((link: string) => {
+    if (!link) {
+      return "To add a track, please enter a SoundCloud URL";
+    }
+
+    if (!soundCloudRegex.test(link)) {
+      return "Please enter a valid SoundCloud URL";
+    }
+
+    return "";
+  }, []);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setYoutubeLink(value);
@@ -39,15 +52,17 @@ export function AddTrackDialog() {
   };
 
   const handleSubmit = async () => {
-    const validationError = validateYoutubeLink(youtubeLink);
-    if (validationError) {
-      setError(validationError);
+    const youtubeLinkError = validateYoutubeLink(youtubeLink);
+    const soundCloudLinkError = validateSoundCloudLink(youtubeLink);
+
+    if (youtubeLinkError && soundCloudLinkError) {
+      setError("Please enter a valid YouTube or SoundCloud URL");
       return;
     }
 
     setIsSubmitting(true);
     try {
-      await downloadYouTubeAudio(youtubeLink, "./downloads");
+      await downloadAudio(youtubeLink, "./downloads");
       setYoutubeLink("");
       setOpen(false);
     } catch (err) {
