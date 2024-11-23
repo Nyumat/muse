@@ -10,9 +10,6 @@ export function useAudioPlayer() {
     setTrackProgress,
     seekToPosition,
   } = useAudioStore();
-    
-    
-    console.log({currentTrack, isPlaying, trackProgress, audioRef, setTrackProgress, seekToPosition})
 
   useEffect(() => {
     if (!audioRef.current) throw new Error("Audio element not found.");

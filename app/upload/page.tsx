@@ -10,7 +10,7 @@ export default function UploadPage() {
   const handleUpload = async () => {
     setUploading(true);
     try {
-      const res = await fetch("/api/upload-audio", {
+      const res = await fetch("/api/audio", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

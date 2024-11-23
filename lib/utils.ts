@@ -14,6 +14,20 @@ export type Track = {
   image_url?: string;
   file_url?: string;
   user_id?: string;
+  created_at?: string;
+  updated_at?: string;
+  playlist_id?: string;
+};
+
+export type Playlist = {
+  id: string;
+  name: string;
+  user_id: string;
+  tracks: Track[];
+  created_at: Date;
+  updated_at: Date;
+  running_time: number;
+  image_url?: string;
 };
 
 export function toDuration(duration: string) {

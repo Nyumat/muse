@@ -7,7 +7,7 @@ export default function TracksPage() {
 
   useEffect(() => {
     const fetchTracks = async () => {
-      const res = await fetch("/api/get-tracks", {
+      const res = await fetch("/api/tracks", {
         method: "GET",
       });
 

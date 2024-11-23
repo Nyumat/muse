@@ -1,15 +1,13 @@
 "use client";
 
 import { AddTrackDialog } from "@/components/dialogs/add-track";
-import { useEffect } from "react";
-import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
-import { toDuration, type Track } from "@/lib/utils";
-import { create } from "zustand";
-import { Music, Pause, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toDuration, type Track } from "@/lib/utils";
 import { useAudioStore } from "@/stores/audio";
+import { Music, Pause, Play } from "lucide-react";
+import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
+import { create } from "zustand";
 
-// Library store
 interface LibraryState {
   tracks: Track[];
   setTracks: (tracks: Track[]) => void;
@@ -24,7 +22,6 @@ const useLibraryStore = create<LibraryState>((set) => ({
   setIsLoading: (loading) => set({ isLoading: loading }),
 }));
 
-// Utility for view transitions
 const startViewTransition = (callback: () => void) => {
   if (document.startViewTransition) {
     document.startViewTransition(callback);
@@ -33,34 +30,11 @@ const startViewTransition = (callback: () => void) => {
   }
 };
 
-export function LibraryView() {
-  const { tracks, setTracks, isLoading, setIsLoading } = useLibraryStore();
+export function LibraryView({ tracks }: { tracks: Track[] }) {
+  const { setTracks, setIsLoading } = useLibraryStore();
   const audioStore = useAudioStore();
-
-  // Destructure what we need from the audio store
   const { currentTrack, isPlaying, trackProgress, playTrack, togglePlayPause } =
     audioStore;
-
-  useEffect(() => {
-    const fetchTracks = async () => {
-      try {
-        const res = await fetch("/api/get-tracks");
-        const data = await res.json();
-
-        if (!data.error) {
-          startViewTransition(() => {
-            setTracks(data);
-            setIsLoading(false);
-          });
-        }
-      } catch (error) {
-        console.error("Error fetching tracks:", error);
-        setIsLoading(false);
-      }
-    };
-
-    fetchTracks();
-  }, [setTracks, setIsLoading]);
 
   const onDragEnd = (result: any) => {
     if (!result.destination) return;
@@ -160,7 +134,7 @@ export function LibraryView() {
                                   )}
                                 </Button>
                               ) : (
-                                <span className="text-gray-400 group-hover:invisible">
+                                <span className="text-gray-400">
                                   {index + 1}
                                 </span>
                               )}
