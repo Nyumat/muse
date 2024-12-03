@@ -15,6 +15,10 @@ const SongSchema = new Schema(
     thumbnail: String,
     tags: [String],
     original_url: String,
+    stream_url: {
+      type: String,
+      required: false,
+    },
     extractor: String,
     duration_string: String,
     ytdlp_id: String,

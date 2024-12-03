@@ -1,3 +1,4 @@
+import { MiniPlayer } from "@/components/mini-player";
 import {
   BreadcrumbItem,
   BreadcrumbLink,
@@ -25,7 +26,8 @@ import {
 import { DashboardPageLayout } from "@/layout/page-layout";
 import Fetcher from "@/lib/fetcher";
 import { cn } from "@/lib/utils";
-import { useQuery } from "@tanstack/react-query";
+import { usePlayerControls } from "@/stores/audioStore";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Pencil, Play, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { AddSongDialog } from "../add-song-dialog";
@@ -43,6 +45,7 @@ export interface Song {
   view_count: number;
   thumbnail: string;
   tags: string[];
+  stream_url: string | undefined;
   original_url: string;
   extractor: string;
   duration_string: string;
@@ -57,11 +60,22 @@ const getSongs = async () => {
   return res.data;
 };
 
+const deleteSong = async (id: string) => {
+  await api.delete(`/api/songs/${id}`);
+};
+
 export function SongsView() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const songsPerPage = 10;
+  const queryClient = useQueryClient();
   const query = useQuery({ queryKey: ["songs"], queryFn: getSongs });
+  const removeSong = useMutation({
+    mutationFn: deleteSong,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["songs"] });
+    },
+  });
 
   const filteredSongs = query?.data?.filter(
     (song) =>
@@ -70,12 +84,15 @@ export function SongsView() {
       song.tags.some((tag) =>
         tag.toLowerCase().includes(searchTerm.toLowerCase())
       )
-  ) as Song[];
+  );
 
-//   const indexOfLastSong = currentPage * songsPerPage;
-//   const indexOfFirstSong = indexOfLastSong - songsPerPage;
-//   const currentSongs = filteredSongs?.slice(indexOfFirstSong, indexOfLastSong);
-  const totalPages = Math.ceil(filteredSongs?.length / songsPerPage) || 1;
+  const indexOfLastSong = currentPage * songsPerPage;
+  const indexOfFirstSong = indexOfLastSong - songsPerPage;
+  const currentSongs = filteredSongs?.slice(indexOfFirstSong, indexOfLastSong);
+  const totalPages =
+    (filteredSongs && Math.ceil(filteredSongs?.length / songsPerPage)) || 1;
+
+  const { playSong } = usePlayerControls();
 
   return (
     <>
@@ -111,21 +128,23 @@ export function SongsView() {
                 <TableHead>Uploader</TableHead>
                 <TableHead>Upload Date</TableHead>
                 <TableHead>Views</TableHead>
-                <TableHead>Tags</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {query?.data?.map((song) => (
+              {currentSongs?.map((song) => (
                 <TableRow key={song._id} className={cn("border-none")}>
                   <TableCell>
                     <img
-                      src={`https://i.ytimg.com/vi/6QAAnh9sPF8/sddefault.jpg`} // TODO: Replace with song.thumbnail
+                      src={song.thumbnail}
                       alt={`${song.title} thumbnail`}
                       className="rounded-md object-cover"
                     />
                   </TableCell>
-                  <TableCell className="font-medium truncate max-w-44">
+                  <TableCell
+                    className="font-medium truncate max-w-44"
+                    title={song.title}
+                  >
                     {song.title}
                   </TableCell>
                   <TableCell>{formatDuration(song.duration)}</TableCell>
@@ -134,17 +153,27 @@ export function SongsView() {
                     {new Date(song.upload_date).toLocaleDateString()}
                   </TableCell>
                   <TableCell>{song.view_count.toLocaleString()}</TableCell>
-                  <TableCell className="truncate max-w-12">
-                    {song.tags.join(", ").slice(0, 20)}
-                  </TableCell>
+
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" title="Play">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      title="Play"
+                      onClick={() => {
+                        playSong(song._id);
+                      }}
+                    >
                       <Play className="h-4 w-4" />
                     </Button>
                     <Button variant="ghost" size="icon" title="Edit">
                       <Pencil className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" title="Delete">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      title="Delete"
+                      onClick={() => removeSong.mutate(song._id)}
+                    >
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </TableCell>
@@ -186,6 +215,7 @@ export function SongsView() {
                 />
               </PaginationItem>
             </PaginationContent>
+        <MiniPlayer />
           </Pagination>
         </div>
       </DashboardPageLayout>

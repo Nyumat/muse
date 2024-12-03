@@ -9,6 +9,21 @@ if (!process.env.R2_ACCOUNT_ID) {
   process.exit(1);
 }
 
+if (!process.env.R2_ACCESS_KEY_ID) {
+  console.error("R2_ACCESS_KEY_ID missing");
+  process.exit(1);
+}
+
+if (!process.env.R2_SECRET_ACCESS_KEY) {
+  console.error("R2_SECRET_ACCESS_KEY missing");
+  process.exit(1);
+}
+
+if (!process.env.R2_BUCKET_NAME) {
+  console.error("R2_BUCKET_NAME missing");
+  process.exit(1);
+}
+
 export const R2 = new S3Client({
   region: "auto",
   endpoint: process.env.R2_ENDPOINT,
@@ -19,8 +34,9 @@ export const R2 = new S3Client({
 });
 
 export async function getPresignedUrl(key: string) {
+  const bucket = process.env.R2_BUCKET_NAME;
   const command = new GetObjectCommand({
-    Bucket: process.env.R2_BUCKET_NAME,
+    Bucket: bucket,
     Key: key,
   });
   try {

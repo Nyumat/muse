@@ -31,7 +31,7 @@ const colorfulLogger = (req: Request, res: Response, next: Function) => {
   console.log(
     chalk.blue(`[${formatDateToPST(new Date())}]`),
     chalk.green(req.method),
-    chalk.yellow(req.url)
+    chalk.yellow(req.url),
   );
   next();
 };

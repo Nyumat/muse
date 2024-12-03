@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,6 +10,25 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import Fetcher from "@/lib/fetcher";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { AxiosError } from "axios";
+import { useState } from "react";
+import { toast } from "sonner";
+
+const api = Fetcher.getInstance();
+
+type SongFormDataFields = {
+  title: string;
+  duration: string;
+  mediaUrl: string;
+  thumbnail: string;
+  tags: string;
+};
+
+const addSong = async (data: SongFormDataFields) => {
+  await api.post("/api/songs", data);
+};
 
 export function AddSongDialog() {
   const [open, setOpen] = useState(false);
@@ -22,6 +40,22 @@ export function AddSongDialog() {
     tags: "",
   });
 
+  const queryClient = useQueryClient();
+  const newSong = useMutation({
+    mutationFn: addSong,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["songs"] });
+      toast.success("Song added successfully");
+    },
+    onError: (error) => {
+      toast.error(
+        error instanceof AxiosError || error instanceof Error
+          ? error.message
+          : "An error occurred"
+      );
+    },
+  });
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setSongData((prev) => ({ ...prev, [name]: value }));
@@ -29,9 +63,7 @@ export function AddSongDialog() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would typically send the data to your backend
-    console.log("Submitting song data:", songData);
-    // Reset form and close dialog
+    newSong.mutate(songData);
     setSongData({
       title: "",
       duration: "",

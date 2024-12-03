@@ -118,9 +118,19 @@ async function downloadSong(url: string): Promise<DownloadResult> {
   };
 }
 
+type SongFormDataFields = {
+  title: string;
+  duration: string;
+  mediaUrl: string;
+  thumbnail: string;
+  tags: string;
+};
+
 router.post("/api/songs", async (req, res) => {
   try {
-    const { url } = req.body;
+      const {
+        mediaUrl: url,
+     } = req.body;
     const user = req.auth;
     const validator = new UrlValidator();
 
@@ -208,6 +218,16 @@ router.get("/api/songs", async (req, res) => {
   }
   try {
     const songs = await Song.find({ createdBy: req.auth._id });
+
+    for (const song of songs) {
+      if (song.r2Key && !song.stream_url) {
+        song.stream_url = await getPresignedUrl(song.r2Key);
+      } else if (!song.r2Key) {
+        // Remove songs that don't have a key
+        await Song.deleteOne({ _id: song._id });
+      }
+    }
+
     res.json(songs);
   } catch (error) {
     console.error("Error fetching songs:", error);
@@ -219,6 +239,7 @@ router.get("/api/songs", async (req, res) => {
 router.delete("/api/songs/:id", async (req, res) => {
   try {
     const song = await Song.findById(req.params.id);
+
     if (!song) {
       return res.status(404).json({ error: "Song not found" });
     }
