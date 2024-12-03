@@ -87,7 +87,7 @@ export function LoginCard() {
       toast.success(response.message);
       setToken(response.token);
       localStorage.setItem("token", response.token);
-      navigate("/");
+      navigate("/dashboard");
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     }
@@ -203,7 +203,7 @@ export function RegisterCard() {
       toast.success(response.message);
       setToken(response.token);
       localStorage.setItem("token", response.token);
-      navigate("/");
+      navigate("/dashboard");
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     }

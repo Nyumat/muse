@@ -25,6 +25,7 @@ export const authMiddleware = (
   try {
     const decoded = verifyToken(token) as JWTDecoded;
     req.token = token;
+    console.log(decoded);
     req.auth = {
       _id: decoded._id,
       email: decoded.email,
