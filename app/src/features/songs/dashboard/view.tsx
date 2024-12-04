@@ -30,6 +30,7 @@ import { usePlayerControls } from "@/stores/audioStore";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Pencil, Play, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router";
 import { formatDate } from "../../../lib/utils";
 import { AddSongDialog } from "../add-song-dialog";
 
@@ -101,7 +102,9 @@ export function SongsView() {
         breadcrumbs={
           <>
             <BreadcrumbItem>
-              <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
+              <BreadcrumbLink asChild>
+                <Link to="/dashboard">Dashboard</Link>
+              </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>

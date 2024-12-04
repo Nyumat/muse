@@ -1,10 +1,20 @@
-import { type Song } from "@/features/songs/dashboard/view";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { Slider } from "@/components/ui/slider";
+import { Song } from "@/features/songs/dashboard/view";
 import { cn, formatTime } from "@/lib/utils";
 import { useAudioStore } from "@/stores/audioStore";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  List,
-  Maximize2,
+  ChevronDown,
+  ChevronUp,
+  ListMusic,
   Minimize2,
   Pause,
   Play,
@@ -15,21 +25,16 @@ import {
   Volume2,
   VolumeX,
 } from "lucide-react";
-import React, { useEffect, useRef } from "react";
-
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Slider } from "@/components/ui/slider";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { CgMiniPlayer } from "react-icons/cg";
+import { toast } from "sonner";
 
 export function MiniPlayer() {
+  const [showQueue, setShowQueue] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+  const progressBarRef = useRef<HTMLDivElement>(null);
+
   const {
     currentSong,
     isPlaying,
@@ -37,8 +42,10 @@ export function MiniPlayer() {
     currentTime,
     duration,
     queue,
+    queueIndex,
     isShuffled,
     isRepeating,
+    bufferedTime,
     playPause,
     seek,
     setVolume,
@@ -46,25 +53,10 @@ export function MiniPlayer() {
     previousSong,
     toggleShuffle,
     toggleRepeat,
+    playQueueItem,
   } = useAudioStore();
 
-  const [expanded, setExpanded] = React.useState(false);
-  const progressBarRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.code === "Space" && e.target === document.body) {
-        e.preventDefault();
-        playPause();
-      }
-    };
-    window.addEventListener("keydown", handleKeyPress);
-    return () => window.removeEventListener("keydown", handleKeyPress);
-  }, [playPause]);
-
-  if (!currentSong) return null;
-
-  const handleProgressBarClick = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (progressBarRef.current) {
       const rect = progressBarRef.current.getBoundingClientRect();
       const percent = (e.clientX - rect.left) / rect.width;
@@ -72,334 +64,350 @@ export function MiniPlayer() {
     }
   };
 
-  const Controls = () => (
-    <div className="flex items-center justify-center gap-4 md:gap-6">
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleShuffle}
-              className={cn(
-                "text-muted-foreground hover:text-primary",
-                isShuffled && "text-primary"
-              )}
-            >
-              <Shuffle className="w-5 h-5" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Shuffle {isShuffled ? "On" : "Off"}</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+        if (!currentSong) {
+          toast.error("No song is playing");
+        } else {
+          setCollapsed((prev) => !prev);
+        }
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [currentSong]);
 
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={previousSong}
-        className="hover:text-primary"
-      >
-        <SkipBack className="w-6 h-6" />
-      </Button>
+  const canPlayNext = queueIndex < queue.length - 1 || isRepeating;
+  const canPlayPrevious = queueIndex > 0 || currentTime > 3;
 
-      <Button
-        size="icon"
-        onClick={playPause}
-        className="h-12 w-12 rounded-full"
-      >
-        {isPlaying ? (
-          <Pause className="w-6 h-6" />
-        ) : (
-          <Play className="w-6 h-6 ml-1" />
-        )}
-      </Button>
+  const QueueItem = useMemo(
+    () =>
+      ({
+        song,
+        index,
+        currentSongId,
+      }: {
+        song: Song;
+        index: number;
+        currentSongId: string;
+      }) =>
+        (
+          <div
+            onClick={() => playQueueItem(index)}
+            className={cn(
+              "flex items-center justify-between py-2 px-4 rounded-lg transition-colors cursor-pointer",
+              song._id === currentSongId && "bg-primary/10",
+              song._id !== currentSongId && "hover:bg-muted"
+            )}
+          >
+            <div className="flex items-center gap-4">
+              <img
+                src={song.thumbnail}
+                alt={song.title}
+                className="w-12 h-12 rounded-lg object-cover"
+              />
+              <div>
+                <h3 className="font-medium">{song.title}</h3>
+                <p className="text-sm text-muted-foreground">{song.uploader}</p>
+              </div>
+            </div>
+            {song._id === currentSongId && isPlaying && (
+              <div className="w-3 h-3 rounded-full bg-primary animate-pulse" />
+            )}
+          </div>
+        ),
 
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={nextSong}
-        className="hover:text-primary"
-      >
-        <SkipForward className="w-6 h-6" />
-      </Button>
-
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleRepeat}
-              className={cn(
-                "text-muted-foreground hover:text-primary",
-                isRepeating && "text-primary"
-              )}
-            >
-              <Repeat className="w-5 h-5" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Repeat {isRepeating ? "On" : "Off"}</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    </div>
+    [isPlaying, playQueueItem]
   );
 
-  const VolumeControl = () => (
-    <div className="hidden md:flex items-center gap-4">
-      <Button
-        variant="ghost"
-        size="icon"
-        className={cn(
-          "text-muted-foreground hover:text-primary",
-          volume === 0 && "text-primary"
-        )}
-        onClick={() => setVolume(volume === 0 ? 1 : 0)}
-      >
-        {volume === 0 ? (
-          <VolumeX className="w-5 h-5" />
-        ) : (
-          <Volume2 className="w-5 h-5" />
-        )}
-      </Button>
-      <Slider
-        value={[volume * 100]}
-        onValueChange={(value) => setVolume(value[0] / 100)}
-        max={100}
-        step={1}
-        className="w-24"
-      />
-    </div>
+  const ControlButtons = useMemo(
+    () => () =>
+      (
+        <>
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={previousSong}
+            disabled={!canPlayPrevious}
+          >
+            <SkipBack className="w-5 h-5" />
+          </Button>
+
+          <Button
+            size="icon"
+            className="h-10 w-10 rounded-full bg-primary hover:bg-primary/90"
+            onClick={playPause}
+          >
+            {isPlaying ? (
+              <Pause className="w-5 h-5 text-primary-foreground" />
+            ) : (
+              <Play className="w-5 h-5 ml-0.5 text-primary-foreground" />
+            )}
+          </Button>
+
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={nextSong}
+            disabled={!canPlayNext}
+          >
+            <SkipForward className="w-5 h-5" />
+          </Button>
+        </>
+      ),
+    [canPlayNext, canPlayPrevious, isPlaying, nextSong, playPause, previousSong]
   );
 
-  const ProgressBar = () => (
-    <div className="w-full px-4 md:px-0">
-      <div
-        ref={progressBarRef}
-        className="h-1.5 bg-secondary rounded-full overflow-hidden cursor-pointer group"
-        onClick={handleProgressBarClick}
-      >
-        <div
-          className="h-full bg-primary group-hover:bg-primary/90 transition-colors"
-          style={{ width: `${(currentTime / duration) * 100}%` }}
-        />
-      </div>
-      <div className="flex justify-between text-xs text-muted-foreground mt-1">
-        <span>{formatTime(currentTime)}</span>
-        <span>{formatTime(duration)}</span>
-      </div>
-    </div>
-  );
+  if (!currentSong) return null;
 
-  const QueueItem = ({ song, index }: { song: Song; index: number }) => (
-    <div
-      className={cn(
-        "flex items-center p-3 rounded-md transition-colors",
-        song._id === currentSong._id ? "bg-secondary" : "hover:bg-secondary/50"
-      )}
-    >
-      <div className="w-6 text-sm text-muted-foreground">{index + 1}</div>
-      <img
-        src={song.thumbnail}
-        alt={song.title}
-        className="w-12 h-12 rounded object-cover"
-      />
-      <div className="ml-3 flex-1 min-w-0">
-        <p className="text-sm font-medium truncate">{song.title}</p>
-        <p className="text-xs text-muted-foreground truncate">
-          {song.uploader}
-        </p>
-      </div>
-    </div>
-  );
+  if (collapsed) {
+    return (
+      <>
+        <Button asChild>
+          <motion.button
+            initial={{ y: "100%" }}
+            animate={{ y: "0%" }}
+            title="Open Mini Player"
+            exit={{ y: "100%" }}
+            onClick={() => setCollapsed(false)}
+            className="fixed -bottom-1 right-20 h-12 w-8 bg-primary hover:bg-primary/90 text-primary-foreground flex items-center justify-center shadow-lg"
+          >
+            <CgMiniPlayer className="w-5 h-5" />
+          </motion.button>
+        </Button>
+      </>
+    );
+  }
+
+  const playerVariants = {
+    mini: {
+      height: "72px",
+      y: 0,
+    },
+    expanded: {
+      height: "100vh",
+      y: 0,
+    },
+    hidden: {
+      y: "100%",
+    },
+  };
 
   return (
-    <>
+    <AnimatePresence>
       <motion.div
-        initial={{ y: "100%" }}
-        animate={{ y: 0 }}
-        exit={{ y: "100%" }}
-        className={cn(
-          "fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-md border-t z-40",
-          expanded ? "h-[calc(100vh-4rem)]" : "h-20"
-        )}
+        initial="hidden"
+        animate={expanded ? "expanded" : "mini"}
+        variants={playerVariants}
+        transition={{ type: "spring", damping: 20 }}
+        className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-lg border-t z-50"
       >
-        <div className="container mx-auto h-full">
-          <div className="hidden md:flex h-full">
-            <AnimatePresence mode="wait">
-              {expanded ? (
-                <motion.div
-                  key="expanded"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="flex w-full gap-8 p-6"
-                >
-                  <div className="flex-1 flex flex-col items-center justify-start pt-8 gap-8">
-                    <img
-                      src={currentSong.thumbnail}
-                      alt={currentSong.title}
-                      className="w-64 h-64 rounded-lg object-cover shadow-lg"
-                    />
-                    <div className="text-center">
-                      <h3 className="text-xl font-semibold">
-                        {currentSong.title}
-                      </h3>
-                      <p className="text-muted-foreground">
-                        {currentSong.uploader}
-                      </p>
-                    </div>
-                    <ProgressBar />
-                    <Controls />
-                    <VolumeControl />
-                  </div>
-                  <Card className="w-80">
-                    <CardContent className="p-4">
-                      <h3 className="text-lg font-semibold mb-4">Queue</h3>
-                      <ScrollArea className="h-[calc(100vh-20rem)]">
-                        <div className="space-y-2 pr-4">
-                          {queue.map((song: Song, index: number) => (
-                            <QueueItem
-                              key={song._id}
-                              song={song}
-                              index={index}
-                            />
-                          ))}
-                        </div>
-                      </ScrollArea>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="collapsed"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="flex items-center w-full px-6"
-                >
-                  <div className="flex items-center flex-1 min-w-0 gap-6">
-                    <div className="flex items-center flex-1 min-w-0">
-                      <img
-                        src={currentSong.thumbnail}
-                        alt={currentSong.title}
-                        className="w-14 h-14 rounded object-cover"
-                      />
-                      <div className="ml-4 flex-1 min-w-0">
-                        <h3 className="font-medium truncate">
-                          {currentSong.title}
-                        </h3>
-                        <p className="text-sm text-muted-foreground truncate">
-                          {currentSong.uploader}
-                        </p>
-                      </div>
-                    </div>
-                    <Controls />
-                    <VolumeControl />
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* Mobile View */}
-          <div className="md:hidden flex flex-col h-full">
-            <div className="flex items-center px-4 h-20">
+        <div
+          className={cn(
+            "h-full transition-opacity",
+            expanded && "opacity-0 pointer-events-none"
+          )}
+        >
+          <div className="container mx-auto h-full flex items-center justify-between gap-4 px-4">
+            <div className="flex items-center flex-1 min-w-0 gap-3">
               <img
                 src={currentSong.thumbnail}
                 alt={currentSong.title}
-                className="w-12 h-12 rounded object-cover"
+                className="w-12 h-12 rounded-lg object-cover"
               />
-              <div className="ml-3 flex-1 min-w-0">
-                <h3 className="text-sm font-medium truncate">
-                  {currentSong.title}
-                </h3>
-                <p className="text-xs text-muted-foreground truncate">
+              <div className="flex-1 min-w-0">
+                <h3 className="font-medium truncate">{currentSong.title}</h3>
+                <p className="text-sm text-muted-foreground truncate">
                   {currentSong.uploader}
                 </p>
               </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <ControlButtons />
+            </div>
+
+            <div className="flex items-center gap-2">
               <Button
                 size="icon"
-                onClick={playPause}
-                className="ml-4 rounded-full h-10 w-10"
+                variant="ghost"
+                className="md:hidden"
+                onClick={() => setShowQueue(true)}
               >
-                {isPlaying ? (
-                  <Pause className="w-5 h-5" />
-                ) : (
-                  <Play className="w-5 h-5 ml-0.5" />
-                )}
+                <ListMusic className="w-5 h-5" />
+              </Button>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="hidden md:flex"
+                onClick={() => setExpanded(true)}
+              >
+                <ChevronUp className="w-5 h-5" />
+              </Button>
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => setCollapsed(true)}
+              >
+                <Minimize2 className="w-5 h-5" />
               </Button>
             </div>
-            <Sheet>
-              <SheetTrigger asChild>
+          </div>
+        </div>
+
+        <AnimatePresence mode="wait">
+          {expanded && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 flex flex-col p-8"
+            >
+              <div className="flex justify-between items-center mb-8">
                 <Button
                   size="icon"
-                  className="fixed bottom-20 right-4 rounded-full shadow-lg z-50"
+                  variant="ghost"
+                  onClick={() => setExpanded(false)}
                 >
-                  <List className="w-5 h-5" />
+                  <ChevronDown className="w-6 h-6" />
                 </Button>
-              </SheetTrigger>
-              <SheetContent
-                side="bottom"
-                className="h-[90vh] px-6 rounded-t-3xl"
-              >
-                <div className="flex flex-col items-center gap-6 pt-6">
-                  <img
-                    src={currentSong.thumbnail}
-                    alt={currentSong.title}
-                    className="w-48 h-48 rounded-lg object-cover shadow-lg"
-                  />
-                  <div className="text-center">
-                    <h3 className="text-lg font-semibold">
-                      {currentSong.title}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {currentSong.uploader}
-                    </p>
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => setShowQueue(true)}
+                  >
+                    <ListMusic className="w-6 h-6" />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => setCollapsed(true)}
+                  >
+                    <Minimize2 className="w-6 h-6" />
+                  </Button>
+                </div>
+              </div>
+
+              <div className="flex-1 flex flex-col items-center justify-center gap-8 max-w-lg mx-auto w-full">
+                <motion.img
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  src={currentSong.thumbnail}
+                  alt={currentSong.title}
+                  className="w-64 h-64 rounded-2xl object-cover shadow-xl"
+                />
+
+                <div className="text-center w-full">
+                  <h2 className="text-xl font-semibold mb-2 whitespace-nowrap">
+                    {currentSong.title}
+                  </h2>
+                  <p className="text-muted-foreground">
+                    {currentSong.uploader}
+                  </p>
+                </div>
+
+                <div className="w-full space-y-2">
+                  <div
+                    ref={progressBarRef}
+                    onClick={handleProgressClick}
+                    className="h-1.5 bg-secondary rounded-full overflow-hidden cursor-pointer group"
+                  >
+                    <div
+                      className="h-full bg-muted-foreground/30 rounded-full"
+                      style={{ width: `${(bufferedTime / duration) * 100}%` }}
+                    />
+                    <div
+                      className="h-full bg-primary group-hover:bg-primary/90 -translate-y-full rounded-full relative"
+                      style={{ width: `${(currentTime / duration) * 100}%` }}
+                    >
+                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-primary rounded-full opacity-0 group-hover:opacity-100" />
+                    </div>
                   </div>
-                  <ProgressBar />
-                  <Controls />
-                  <div className="w-full px-4">
+
+                  <div className="flex justify-between text-sm text-muted-foreground">
+                    <span>{formatTime(currentTime)}</span>
+                    <span>{formatTime(duration)}</span>
+                  </div>
+                </div>
+
+                <div className="space-y-6 w-full">
+                  <div className="flex items-center justify-center gap-6">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={toggleShuffle}
+                      className={cn(
+                        "text-muted-foreground hover:text-primary",
+                        isShuffled && "text-primary"
+                      )}
+                    >
+                      <Shuffle className="w-5 h-5" />
+                    </Button>
+
+                    <ControlButtons />
+
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={toggleRepeat}
+                      className={cn(
+                        "text-muted-foreground hover:text-primary",
+                        isRepeating && "text-primary"
+                      )}
+                    >
+                      <Repeat className="w-5 h-5" />
+                    </Button>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setVolume(volume === 0 ? 1 : 0)}
+                      className="text-muted-foreground hover:text-primary"
+                    >
+                      {volume === 0 ? (
+                        <VolumeX className="w-5 h-5" />
+                      ) : (
+                        <Volume2 className="w-5 h-5" />
+                      )}
+                    </Button>
                     <Slider
                       value={[volume * 100]}
                       onValueChange={(value) => setVolume(value[0] / 100)}
                       max={100}
                       step={1}
-                      className="w-full"
+                      className="w-32"
                     />
                   </div>
-                  <div className="w-full mt-4">
-                    <h3 className="text-lg font-semibold mb-4 px-4">Queue</h3>
-                    <ScrollArea className="h-[30vh]">
-                      <div className="space-y-2 px-4">
-                        {queue.map((song: Song, index: number) => (
-                          <QueueItem key={song._id} song={song} index={index} />
-                        ))}
-                      </div>
-                    </ScrollArea>
-                  </div>
                 </div>
-              </SheetContent>
-            </Sheet>
-          </div>
-        </div>
-
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setExpanded(!expanded)}
-          className="hidden md:flex absolute top-4 right-4 text-muted-foreground hover:text-primary"
-        >
-          {expanded ? (
-            <Minimize2 className="w-5 h-5" />
-          ) : (
-            <Maximize2 className="w-5 h-5" />
+              </div>
+            </motion.div>
           )}
-        </Button>
+        </AnimatePresence>
+
+        <Sheet open={showQueue} onOpenChange={setShowQueue}>
+          <SheetContent side="bottom" className="h-[80vh]">
+            <SheetHeader className="px-6">
+              <SheetTitle className="text-xl font-semibold">Up Next</SheetTitle>
+            </SheetHeader>
+            <ScrollArea className="h-full px-6 my-2 pb-6">
+              <div className="space-y-2">
+                {queue.map((song, index) => (
+                  <QueueItem
+                    key={song._id}
+                    song={song}
+                    index={index}
+                    currentSongId={currentSong?._id}
+                  />
+                ))}
+              </div>
+            </ScrollArea>
+          </SheetContent>
+        </Sheet>
       </motion.div>
-    </>
+    </AnimatePresence>
   );
 }

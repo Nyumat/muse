@@ -4,6 +4,12 @@ import { useQuery } from "@tanstack/react-query";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+interface PlayerMode {
+  isExpanded: boolean;
+  isVisible: boolean;
+  isMiniPlayer: boolean;
+}
+
 interface AudioState {
   currentSong: Song | null;
   isPlaying: boolean;
@@ -14,7 +20,10 @@ interface AudioState {
   queueIndex: number;
   isShuffled: boolean;
   isRepeating: boolean;
-  originalQueue: Song[]; // Keep track of original queue order
+  originalQueue: Song[];
+  playerMode: PlayerMode;
+  bufferedTime: number;
+  isBuffering: boolean;
 
   initializeAudio: (songs: Song[], startIndex: number) => void;
   play: () => void;
@@ -29,6 +38,8 @@ interface AudioState {
   clearQueue: () => void;
   toggleShuffle: () => void;
   toggleRepeat: () => void;
+  setPlayerMode: (mode: Partial<PlayerMode>) => void;
+  playQueueItem: (index: number) => void;
 }
 
 export const useAudioStore = create<AudioState>()(
@@ -39,20 +50,28 @@ export const useAudioStore = create<AudioState>()(
       const setupAudioElement = (song: Song) => {
         if (audioElement) {
           audioElement.pause();
+          audioElement.src = "";
           audioElement.removeEventListener("timeupdate", timeUpdateHandler);
           audioElement.removeEventListener(
             "loadedmetadata",
             loadedMetadataHandler
           );
           audioElement.removeEventListener("ended", endedHandler);
+          audioElement.removeEventListener("progress", progressHandler);
+          audioElement.removeEventListener("waiting", bufferingHandler);
+          audioElement.removeEventListener("playing", playingHandler);
         }
 
         audioElement = new Audio(song.stream_url);
         audioElement.volume = get().volume;
+        audioElement.preload = "auto";
 
         audioElement.addEventListener("timeupdate", timeUpdateHandler);
         audioElement.addEventListener("loadedmetadata", loadedMetadataHandler);
         audioElement.addEventListener("ended", endedHandler);
+        audioElement.addEventListener("progress", progressHandler);
+        audioElement.addEventListener("waiting", bufferingHandler);
+        audioElement.addEventListener("playing", playingHandler);
 
         return audioElement;
       };
@@ -69,13 +88,29 @@ export const useAudioStore = create<AudioState>()(
         }
       };
 
+      const progressHandler = () => {
+        if (audioElement && audioElement.buffered.length > 0) {
+          set({
+            bufferedTime: audioElement.buffered.end(
+              audioElement.buffered.length - 1
+            ),
+          });
+        }
+      };
+
+      const bufferingHandler = () => {
+        set({ isBuffering: true });
+      };
+
+      const playingHandler = () => {
+        set({ isBuffering: false });
+      };
+
       const endedHandler = () => {
         const state = get();
         if (state.isRepeating && state.queueIndex === state.queue.length - 1) {
-          // If repeating and at the end, start from beginning
-          get().initializeAudio(state.queue, 0);
-          get().play();
-        } else {
+          get().playQueueItem(0);
+        } else if (state.queueIndex < state.queue.length - 1) {
           get().nextSong();
         }
       };
@@ -91,6 +126,13 @@ export const useAudioStore = create<AudioState>()(
         isShuffled: false,
         isRepeating: false,
         originalQueue: [],
+        playerMode: {
+          isExpanded: false,
+          isVisible: true,
+          isMiniPlayer: true,
+        },
+        bufferedTime: 0,
+        isBuffering: false,
 
         initializeAudio: (songs, startIndex) => {
           set({
@@ -100,14 +142,38 @@ export const useAudioStore = create<AudioState>()(
             currentSong: songs[startIndex],
             isPlaying: false,
             currentTime: 0,
+            playerMode: {
+              ...get().playerMode,
+              isVisible: true,
+            },
           });
 
           setupAudioElement(songs[startIndex]);
         },
 
+        playQueueItem: (index: number) => {
+          const state = get();
+          const song = state.queue[index];
+          if (!song) return;
+
+          setupAudioElement(song);
+          set({
+            currentSong: song,
+            queueIndex: index,
+            currentTime: 0,
+            isPlaying: true,
+          });
+          audioElement?.play();
+        },
+
         play: () => {
           if (audioElement) {
-            audioElement.play();
+            const playPromise = audioElement.play();
+            if (playPromise !== undefined) {
+              playPromise.catch(() => {
+                set({ isPlaying: false });
+              });
+            }
             set({ isPlaying: true });
           }
         },
@@ -133,7 +199,6 @@ export const useAudioStore = create<AudioState>()(
           const currentSong = state.queue[state.queueIndex];
 
           if (!state.isShuffled) {
-            // Shuffle the queue except for the current song
             const remainingSongs = state.queue
               .filter((_, i) => i !== state.queueIndex)
               .sort(() => Math.random() - 0.5);
@@ -146,7 +211,6 @@ export const useAudioStore = create<AudioState>()(
               isShuffled: true,
             });
           } else {
-            // Restore original queue order
             const newIndex = state.originalQueue.findIndex(
               (song) => song._id === currentSong._id
             );
@@ -179,40 +243,20 @@ export const useAudioStore = create<AudioState>()(
         nextSong: () => {
           const state = get();
           if (state.queueIndex < state.queue.length - 1) {
-            const nextIndex = state.queueIndex + 1;
-            const nextSong = state.queue[nextIndex];
-
-            setupAudioElement(nextSong);
-
-            set({
-              currentSong: nextSong,
-              queueIndex: nextIndex,
-              currentTime: 0,
-            });
-
-            get().play();
+            get().playQueueItem(state.queueIndex + 1);
           } else if (state.isRepeating) {
-            // If repeating, go back to the first song
-            get().initializeAudio(state.queue, 0);
-            get().play();
+            get().playQueueItem(0);
           }
         },
 
         previousSong: () => {
           const state = get();
-          if (state.queueIndex > 0) {
-            const previousIndex = state.queueIndex - 1;
-            const previousSong = state.queue[previousIndex];
-
-            setupAudioElement(previousSong);
-
-            set({
-              currentSong: previousSong,
-              queueIndex: previousIndex,
-              currentTime: 0,
-            });
-
-            get().play();
+          if (state.currentTime > 3) {
+            get().seek(0);
+          } else if (state.queueIndex > 0) {
+            get().playQueueItem(state.queueIndex - 1);
+          } else {
+            get().seek(0);
           }
         },
 
@@ -224,20 +268,28 @@ export const useAudioStore = create<AudioState>()(
         },
 
         removeFromQueue: (index) => {
-          const state = get();
-          const newQueue = state.queue.filter((_, i) => i !== index);
-          set({
-            queue: newQueue,
-            queueIndex:
-              index < state.queueIndex
-                ? state.queueIndex - 1
-                : state.queueIndex,
+          set((state) => {
+            const newQueue = [...state.queue];
+            newQueue.splice(index, 1);
+
+            const newOriginalQueue = [...state.originalQueue];
+            newOriginalQueue.splice(index, 1);
+
+            return {
+              queue: newQueue,
+              originalQueue: newOriginalQueue,
+              queueIndex:
+                index < state.queueIndex
+                  ? state.queueIndex - 1
+                  : state.queueIndex,
+            };
           });
         },
 
         clearQueue: () => {
           if (audioElement) {
             audioElement.pause();
+            audioElement.src = "";
           }
           set({
             queue: [],
@@ -247,7 +299,21 @@ export const useAudioStore = create<AudioState>()(
             isPlaying: false,
             currentTime: 0,
             duration: 0,
+            playerMode: {
+              isExpanded: false,
+              isVisible: false,
+              isMiniPlayer: true,
+            },
           });
+        },
+
+        setPlayerMode: (mode) => {
+          set((state) => ({
+            playerMode: {
+              ...state.playerMode,
+              ...mode,
+            },
+          }));
         },
       };
     },
@@ -257,6 +323,7 @@ export const useAudioStore = create<AudioState>()(
         volume: state.volume,
         isShuffled: state.isShuffled,
         isRepeating: state.isRepeating,
+        playerMode: state.playerMode,
       }),
     }
   )
