@@ -1,4 +1,5 @@
-import { verifyToken } from "@/lib/jwt";
+import { generateToken, verifyToken } from "@/lib/jwt";
+import User from "@/models/user";
 import { NextFunction, Request, Response } from "express";
 
 type JWTDecoded = {
@@ -6,6 +7,7 @@ type JWTDecoded = {
   email: string;
   name: string;
   username: string;
+  pfp?: string;
 };
 
 export const authMiddleware = (
@@ -25,14 +27,37 @@ export const authMiddleware = (
   try {
     const decoded = verifyToken(token) as JWTDecoded;
     req.token = token;
-    console.log(decoded);
     req.auth = {
       _id: decoded._id,
       email: decoded.email,
       name: decoded.name,
       username: decoded.username,
+      pfp: decoded.pfp,
     };
     next();
+  } catch (error) {
+    res.status(401).json({ error: "Invalid or expired token." });
+  }
+};
+
+export const refreshTokenMiddleware = async (
+  req: Request,
+  res: Response
+): Promise<string | undefined> => {
+  const token = req.token;
+  try {
+    const decoded = verifyToken(token) as JWTDecoded;
+    const user = await User.findById(decoded._id);
+
+    const newToken = generateToken({
+      _id: decoded._id,
+      email: user?.email,
+      name: user?.name,
+      username: user?.username,
+      pfp: user?.pfp,
+    });
+
+    return newToken;
   } catch (error) {
     res.status(401).json({ error: "Invalid or expired token." });
   }

@@ -40,12 +40,10 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import * as React from "react";
-import { useEffect } from "react";
 import { AiOutlineYoutube } from "react-icons/ai";
 import { IconType } from "react-icons/lib";
-import { PiSoundcloudLogoDuotone } from "react-icons/pi";
-import { Link, useNavigate } from "react-router";
-import { toast } from "sonner";
+import { PiMusicNoteDuotone, PiSoundcloudLogoDuotone } from "react-icons/pi";
+import { Link } from "react-router";
 import { NavUser } from "./nav-user";
 
 const sideBarNavList = {
@@ -79,21 +77,7 @@ const sideBarNavList = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { isLoading, user, error } = useUser();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!user && !isLoading) {
-      toast.error("Your session has expired. Please log in again.");
-      navigate("/login");
-    }
-
-    if (error) {
-      toast.error(error.message);
-      navigate("/");
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, error]);
+  const { isLoading, data: user } = useUser();
 
   if (isLoading) {
     return (
@@ -133,6 +117,30 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <MainNavSection items={sideBarNavList.mainNav} />
+        <NavMain
+          items={[
+            {
+              title: "Muse",
+              url: "/dashboard",
+              icon: PiMusicNoteDuotone,
+              isActive: true,
+              items: [
+                {
+                  title: "Help",
+                  url: "/dashboard/help",
+                },
+                {
+                  title: "Settings",
+                  url: "/dashboard/settings",
+                },
+                {
+                  title: "Profile",
+                  url: "/dashboard/profile",
+                },
+              ],
+            },
+          ]}
+        />
       </SidebarContent>
       <SidebarFooter>
         {/* Kinda Hacky, but whatever...for now... */}
@@ -142,6 +150,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             name={user.name}
             email={user.email}
             username={user.username}
+            pfp={user.pfp}
           />
         )}
       </SidebarFooter>
@@ -218,7 +227,7 @@ export function NavMain({
   items: {
     title: string;
     url: string;
-    icon: LucideIcon;
+    icon: LucideIcon | IconType;
     isActive?: boolean;
     items?: {
       title: string;
@@ -228,16 +237,16 @@ export function NavMain({
 }) {
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Platform</SidebarGroupLabel>
+      <SidebarGroupLabel>More</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => (
           <Collapsible key={item.title} asChild defaultOpen={item.isActive}>
             <SidebarMenuItem>
               <SidebarMenuButton asChild tooltip={item.title}>
-                <a href={item.url}>
+                <Link to={item.url}>
                   <item.icon />
                   <span>{item.title}</span>
-                </a>
+                </Link>
               </SidebarMenuButton>
               {item.items?.length ? (
                 <>
@@ -252,9 +261,9 @@ export function NavMain({
                       {item.items?.map((subItem) => (
                         <SidebarMenuSubItem key={subItem.title}>
                           <SidebarMenuSubButton asChild>
-                            <a href={subItem.url}>
+                            <Link to={subItem.url}>
                               <span>{subItem.title}</span>
-                            </a>
+                            </Link>
                           </SidebarMenuSubButton>
                         </SidebarMenuSubItem>
                       ))}

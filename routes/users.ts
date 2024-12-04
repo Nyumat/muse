@@ -1,3 +1,4 @@
+import { authMiddleware } from "@/lib/middleware";
 import { Request, Response, Router } from "express";
 import User from "../models/user";
 import { MuseResponse } from "../util/types";
@@ -8,8 +9,20 @@ const getUsers = (req: Request, res: Response) => {
   res.json({ message: "GET /users" });
 };
 
-const getUser = (req: Request, res: Response) => {
-  res.json({ message: "GET /users/:id" });
+// TODO: Send less info back to the client
+const getUser = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  if (!id) {
+    return res.status(400).json({ message: "Invalid input" });
+  }
+
+  const user = await User.findById(id).select("-password").populate("songs");
+
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
+  res.json(user);
 };
 
 const createUser = async (
@@ -41,17 +54,18 @@ const updateUser = (req: Request, res: Response) => {
   res.json({ message: "PUT /users/:id" });
 };
 
-const deleteUser = async (req: Request, res: Response): Promise<MuseResponse> => {
+const deleteUser = async (
+  req: Request,
+  res: Response
+): Promise<MuseResponse> => {
   const { id } = req.params;
   if (!id) {
     return res.status(400).json({ message: "Invalid input" });
   }
-
-
 };
 
 router.get("/", getUsers);
-router.get("/:id", getUser);
+router.get("/:id", authMiddleware, getUser);
 router.post("/", createUser);
 router.put("/:id", updateUser);
 router.delete("/:id", deleteUser);

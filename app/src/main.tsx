@@ -20,6 +20,6 @@ createRoot(document.getElementById("root")!).render(
         <MuseRouting />
       </QueryClientProvider>
     </ThemeProvider>
-    <Toaster richColors />
+    <Toaster richColors closeButton position="bottom-center" />
   </BrowserRouter>
 );

@@ -30,6 +30,7 @@ import { usePlayerControls } from "@/stores/audioStore";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Pencil, Play, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { formatDate } from "../../../lib/utils";
 import { AddSongDialog } from "../add-song-dialog";
 
 const api = Fetcher.getInstance();
@@ -149,9 +150,7 @@ export function SongsView() {
                   </TableCell>
                   <TableCell>{formatDuration(song.duration)}</TableCell>
                   <TableCell>{song.uploader}</TableCell>
-                  <TableCell>
-                    {new Date(song.upload_date).toLocaleDateString()}
-                  </TableCell>
+                  <TableCell>{formatDate(song.upload_date)}</TableCell>
                   <TableCell>{song.view_count.toLocaleString()}</TableCell>
 
                   <TableCell className="text-right">
@@ -215,7 +214,7 @@ export function SongsView() {
                 />
               </PaginationItem>
             </PaginationContent>
-        <MiniPlayer />
+            <MiniPlayer />
           </Pagination>
         </div>
       </DashboardPageLayout>

@@ -1,4 +1,5 @@
 import mongoose, { Schema } from "mongoose";
+import { z } from 'zod';
 
 const SongSchema = new Schema(
   {
@@ -30,5 +31,25 @@ const SongSchema = new Schema(
 );
 
 const Song = mongoose.model("Song", SongSchema);
+
+export const songZodSchema = z.object({
+    title: z.string(),
+    duration: z.number(),
+    mediaUrl: z.string(),
+    r2Key: z.string(),
+    createdBy: z.string(),
+    upload_date: z.string(),
+    view_count: z.number(),
+    thumbnail: z.string(),
+    tags: z.array(z.string()),
+    original_url: z.string(),
+    stream_url: z.string().optional(),
+    extractor: z.string(),
+    duration_string: z.string(),
+    ytdlp_id: z.string(),
+    uploader: z.string(),
+});
+
+export type SongModel = z.infer<typeof songZodSchema>;
 
 export default Song;

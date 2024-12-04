@@ -5,6 +5,7 @@ export const generateToken = (payload: object): string => {
   return jwt.sign(payload, JWT_SECRET, { expiresIn: "1h" });
 };
 
-export const verifyToken = (token: string) => {
+export const verifyToken = (token: string | undefined) => {
+  if (!token) throw new Error("Token is missing.");
   return jwt.verify(token, JWT_SECRET);
 };

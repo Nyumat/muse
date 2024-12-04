@@ -1,27 +1,33 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */import React, { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { type Song } from "@/features/songs/dashboard/view";
+import { cn, formatTime } from "@/lib/utils";
+import { useAudioStore } from "@/stores/audioStore";
+import { AnimatePresence, motion } from "framer-motion";
 import {
-  Play,
+  List,
+  Maximize2,
+  Minimize2,
   Pause,
+  Play,
+  Repeat,
+  Shuffle,
   SkipBack,
   SkipForward,
   Volume2,
   VolumeX,
-  Shuffle,
-  Repeat,
-  Maximize2,
-  Minimize2,
-  List,
 } from "lucide-react";
-import { usePlayerControls } from "@/stores/audioStore";
-import { cn, formatTime } from "@/lib/utils";
-import { type Song } from "@/features/songs/dashboard/view";
+import React, { useEffect, useRef } from "react";
 
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Slider } from "@/components/ui/slider";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export function MiniPlayer() {
   const {
@@ -31,6 +37,8 @@ export function MiniPlayer() {
     currentTime,
     duration,
     queue,
+    isShuffled,
+    isRepeating,
     playPause,
     seek,
     setVolume,
@@ -38,10 +46,9 @@ export function MiniPlayer() {
     previousSong,
     toggleShuffle,
     toggleRepeat,
-  } = usePlayerControls();
+  } = useAudioStore();
 
-  const [expanded, setExpanded] = useState(false);
-  const [showVolume, setShowVolume] = useState(false);
+  const [expanded, setExpanded] = React.useState(false);
   const progressBarRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -67,14 +74,27 @@ export function MiniPlayer() {
 
   const Controls = () => (
     <div className="flex items-center justify-center gap-4 md:gap-6">
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={toggleShuffle}
-        className="text-muted-foreground hover:text-primary"
-      >
-        <Shuffle className="w-5 h-5" />
-      </Button>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleShuffle}
+              className={cn(
+                "text-muted-foreground hover:text-primary",
+                isShuffled && "text-primary"
+              )}
+            >
+              <Shuffle className="w-5 h-5" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Shuffle {isShuffled ? "On" : "Off"}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+
       <Button
         variant="ghost"
         size="icon"
@@ -83,6 +103,7 @@ export function MiniPlayer() {
       >
         <SkipBack className="w-6 h-6" />
       </Button>
+
       <Button
         size="icon"
         onClick={playPause}
@@ -94,6 +115,7 @@ export function MiniPlayer() {
           <Play className="w-6 h-6 ml-1" />
         )}
       </Button>
+
       <Button
         variant="ghost"
         size="icon"
@@ -102,14 +124,27 @@ export function MiniPlayer() {
       >
         <SkipForward className="w-6 h-6" />
       </Button>
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={toggleRepeat}
-        className="text-muted-foreground hover:text-primary"
-      >
-        <Repeat className="w-5 h-5" />
-      </Button>
+
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleRepeat}
+              className={cn(
+                "text-muted-foreground hover:text-primary",
+                isRepeating && "text-primary"
+              )}
+            >
+              <Repeat className="w-5 h-5" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Repeat {isRepeating ? "On" : "Off"}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     </div>
   );
 
@@ -118,9 +153,11 @@ export function MiniPlayer() {
       <Button
         variant="ghost"
         size="icon"
-        className="text-muted-foreground hover:text-primary"
-        onMouseEnter={() => setShowVolume(true)}
-        onMouseLeave={() => setShowVolume(false)}
+        className={cn(
+          "text-muted-foreground hover:text-primary",
+          volume === 0 && "text-primary"
+        )}
+        onClick={() => setVolume(volume === 0 ? 1 : 0)}
       >
         {volume === 0 ? (
           <VolumeX className="w-5 h-5" />
@@ -128,24 +165,13 @@ export function MiniPlayer() {
           <Volume2 className="w-5 h-5" />
         )}
       </Button>
-      <AnimatePresence>
-        {showVolume && (
-          <motion.div
-            initial={{ width: 0, opacity: 0 }}
-            animate={{ width: 100, opacity: 1 }}
-            exit={{ width: 0, opacity: 0 }}
-            className="overflow-hidden"
-          >
-            <Slider
-              value={[volume * 100]}
-              onValueChange={(value) => setVolume(value[0] / 100)}
-              max={100}
-              step={1}
-              className="w-24"
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <Slider
+        value={[volume * 100]}
+        onValueChange={(value) => setVolume(value[0] / 100)}
+        max={100}
+        step={1}
+        className="w-24"
+      />
     </div>
   );
 
@@ -168,13 +194,14 @@ export function MiniPlayer() {
     </div>
   );
 
-  const QueueItem = ({ song }: { song: Song }) => (
+  const QueueItem = ({ song, index }: { song: Song; index: number }) => (
     <div
       className={cn(
         "flex items-center p-3 rounded-md transition-colors",
         song._id === currentSong._id ? "bg-secondary" : "hover:bg-secondary/50"
       )}
     >
+      <div className="w-6 text-sm text-muted-foreground">{index + 1}</div>
       <img
         src={song.thumbnail}
         alt={song.title}
@@ -187,36 +214,6 @@ export function MiniPlayer() {
         </p>
       </div>
     </div>
-  );
-
-  const MobileView = () => (
-    <Sheet>
-      <SheetTrigger asChild>
-        <Button
-          size="icon"
-          className="md:hidden fixed bottom-20 right-4 rounded-full shadow-lg z-50"
-        >
-          <List className="w-5 h-5" />
-        </Button>
-      </SheetTrigger>
-      <SheetContent side="bottom" className="h-[90vh] rounded-t-3xl">
-        <div className="flex flex-col items-center gap-6 pt-6">
-          <img
-            src={currentSong.thumbnail}
-            alt={currentSong.title}
-            className="w-48 h-48 rounded-lg object-cover shadow-lg"
-          />
-          <div className="text-center">
-            <h3 className="text-lg font-semibold">{currentSong.title}</h3>
-            <p className="text-sm text-muted-foreground">
-              {currentSong.uploader}
-            </p>
-          </div>
-          <ProgressBar />
-          <Controls />
-        </div>
-      </SheetContent>
-    </Sheet>
   );
 
   return (
@@ -264,8 +261,12 @@ export function MiniPlayer() {
                       <h3 className="text-lg font-semibold mb-4">Queue</h3>
                       <ScrollArea className="h-[calc(100vh-20rem)]">
                         <div className="space-y-2 pr-4">
-                          {queue.map((song: Song) => (
-                            <QueueItem key={song._id} song={song} />
+                          {queue.map((song: Song, index: number) => (
+                            <QueueItem
+                              key={song._id}
+                              song={song}
+                              index={index}
+                            />
                           ))}
                         </div>
                       </ScrollArea>
@@ -280,22 +281,22 @@ export function MiniPlayer() {
                   exit={{ opacity: 0 }}
                   className="flex items-center w-full px-6"
                 >
-                  <div className="flex items-center flex-1 min-w-0">
-                    <img
-                      src={currentSong.thumbnail}
-                      alt={currentSong.title}
-                      className="w-14 h-14 rounded object-cover"
-                    />
-                    <div className="ml-4 flex-1 min-w-0">
-                      <h3 className="font-medium truncate">
-                        {currentSong.title}
-                      </h3>
-                      <p className="text-sm text-muted-foreground truncate">
-                        {currentSong.uploader}
-                      </p>
+                  <div className="flex items-center flex-1 min-w-0 gap-6">
+                    <div className="flex items-center flex-1 min-w-0">
+                      <img
+                        src={currentSong.thumbnail}
+                        alt={currentSong.title}
+                        className="w-14 h-14 rounded object-cover"
+                      />
+                      <div className="ml-4 flex-1 min-w-0">
+                        <h3 className="font-medium truncate">
+                          {currentSong.title}
+                        </h3>
+                        <p className="text-sm text-muted-foreground truncate">
+                          {currentSong.uploader}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-6">
                     <Controls />
                     <VolumeControl />
                   </div>
@@ -304,31 +305,85 @@ export function MiniPlayer() {
             </AnimatePresence>
           </div>
 
-          <div className="md:hidden flex items-center h-full px-4">
-            <img
-              src={currentSong.thumbnail}
-              alt={currentSong.title}
-              className="w-12 h-12 rounded object-cover"
-            />
-            <div className="ml-3 flex-1 min-w-0">
-              <h3 className="text-sm font-medium truncate">
-                {currentSong.title}
-              </h3>
-              <p className="text-xs text-muted-foreground truncate">
-                {currentSong.uploader}
-              </p>
+          {/* Mobile View */}
+          <div className="md:hidden flex flex-col h-full">
+            <div className="flex items-center px-4 h-20">
+              <img
+                src={currentSong.thumbnail}
+                alt={currentSong.title}
+                className="w-12 h-12 rounded object-cover"
+              />
+              <div className="ml-3 flex-1 min-w-0">
+                <h3 className="text-sm font-medium truncate">
+                  {currentSong.title}
+                </h3>
+                <p className="text-xs text-muted-foreground truncate">
+                  {currentSong.uploader}
+                </p>
+              </div>
+              <Button
+                size="icon"
+                onClick={playPause}
+                className="ml-4 rounded-full h-10 w-10"
+              >
+                {isPlaying ? (
+                  <Pause className="w-5 h-5" />
+                ) : (
+                  <Play className="w-5 h-5 ml-0.5" />
+                )}
+              </Button>
             </div>
-            <Button
-              size="icon"
-              onClick={playPause}
-              className="ml-4 rounded-full h-10 w-10"
-            >
-              {isPlaying ? (
-                <Pause className="w-5 h-5" />
-              ) : (
-                <Play className="w-5 h-5 ml-0.5" />
-              )}
-            </Button>
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button
+                  size="icon"
+                  className="fixed bottom-20 right-4 rounded-full shadow-lg z-50"
+                >
+                  <List className="w-5 h-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent
+                side="bottom"
+                className="h-[90vh] px-6 rounded-t-3xl"
+              >
+                <div className="flex flex-col items-center gap-6 pt-6">
+                  <img
+                    src={currentSong.thumbnail}
+                    alt={currentSong.title}
+                    className="w-48 h-48 rounded-lg object-cover shadow-lg"
+                  />
+                  <div className="text-center">
+                    <h3 className="text-lg font-semibold">
+                      {currentSong.title}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      {currentSong.uploader}
+                    </p>
+                  </div>
+                  <ProgressBar />
+                  <Controls />
+                  <div className="w-full px-4">
+                    <Slider
+                      value={[volume * 100]}
+                      onValueChange={(value) => setVolume(value[0] / 100)}
+                      max={100}
+                      step={1}
+                      className="w-full"
+                    />
+                  </div>
+                  <div className="w-full mt-4">
+                    <h3 className="text-lg font-semibold mb-4 px-4">Queue</h3>
+                    <ScrollArea className="h-[30vh]">
+                      <div className="space-y-2 px-4">
+                        {queue.map((song: Song, index: number) => (
+                          <QueueItem key={song._id} song={song} index={index} />
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
 
@@ -345,8 +400,6 @@ export function MiniPlayer() {
           )}
         </Button>
       </motion.div>
-
-      <MobileView />
     </>
   );
 }

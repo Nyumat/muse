@@ -3,7 +3,7 @@ import cors from "cors";
 import express, { Request, Response } from "express";
 import helmet from "helmet";
 import { connectToDB } from "./lib/database";
-import { authMiddleware } from "./lib/middleware";
+import { authMiddleware, refreshTokenMiddleware } from "./lib/middleware";
 import authRouter from "./routes/auth";
 import songRouter from "./routes/songs";
 import usersRouter from "./routes/users";
@@ -41,6 +41,7 @@ app.use(colorfulLogger);
 app.use("/users", usersRouter);
 app.use("/auth", authRouter);
 app.use("/", authMiddleware, songRouter);
+app.use("/refresh-token", refreshTokenMiddleware);
 
 app.listen(port, async () => {
   await connectToDB();
