@@ -2,11 +2,10 @@
 
 import {
   BadgeCheck,
-  Bell,
   ChevronsUpDown,
   CreditCard,
   LogOut,
-  Sparkles,
+  User2,
 } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -26,8 +25,10 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { User } from "@/hooks/use-user";
+import { useNavigate } from "react-router";
 
 export function NavUser({ name, username, email, pfp }: User) {
+  const navigate = useNavigate();
   const { isMobile } = useSidebar();
   const user = {
     name,
@@ -38,8 +39,7 @@ export function NavUser({ name, username, email, pfp }: User) {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    // yes, force a full page reload
-    window.location.href = "/login";
+    navigate("/login");
   };
 
   return (
@@ -84,24 +84,20 @@ export function NavUser({ name, username, email, pfp }: User) {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <Sparkles />
-                Upgrade to Pro
+              <DropdownMenuItem onClick={() => navigate("/dashboard/profile")}>
+                <User2 />
+                Your Proifle
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <BadgeCheck />
-                Account
-              </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/dashboard/settings")}>
                 <CreditCard />
-                Billing
+                Settings
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Bell />
-                Notifications
+              <DropdownMenuItem onClick={() => navigate("/dashboard/help")}>
+                <BadgeCheck />
+                Help
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />

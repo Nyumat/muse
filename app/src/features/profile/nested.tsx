@@ -7,7 +7,7 @@ import { useUser } from "@/hooks/use-user";
 import { Loader2, Music, Pencil } from "lucide-react";
 import { useNavigate, useParams } from "react-router";
 
-interface UserProfile {
+export interface UserProfile {
   _id: string;
   username: string;
   email: string;
