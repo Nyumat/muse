@@ -14,12 +14,13 @@ import { SidebarTrigger } from "./components/ui/sidebar";
 import { HelpView } from "./features/help/view";
 import { HeroSection } from "./features/landing/hero";
 import { Navbar } from "./features/landing/nav";
+import { PlaylistViewNested } from "./features/playlists/nested";
+import { Playlist, PlaylistView } from "./features/playlists/view";
 import { ProfileViewNested, UserProfile } from "./features/profile/nested";
 import { ProfileView } from "./features/profile/view";
 import { SettingsView } from "./features/settings/view";
 import { SongsPage } from "./features/songs/dashboard/page";
-import { DashboardPageLayout } from "./layout/page-layout";
-import { DashboardLayout } from "./layout/skeleton";
+import { DashboardPageLayout, DashboardLayout } from "./layout/page-layout";
 import Fetcher from "./lib/fetcher";
 
 export default function App() {
@@ -143,11 +144,7 @@ function PlaylistsPage() {
           </>
         }
       >
-        <div className="mb-4 flex justify-between items-center">
-          <h1 className="text-2xl font-semibold dark:text-gray-200 text-gray-700">
-            Playlists
-          </h1>
-        </div>
+        <PlaylistView />
       </DashboardPageLayout>
     </>
   );
@@ -172,6 +169,45 @@ function ProfilePage() {
         }
       >
         <ProfileView />
+      </DashboardPageLayout>
+    </>
+  );
+}
+
+function SinglePlaylistPage() {
+  const { id } = useParams<{ id: string }>();
+  const api = Fetcher.getInstance();
+  const { data: playlist } = useQuery({
+    queryKey: ["playlist", id],
+    queryFn: async () => {
+      const { data } = await api.get<Playlist>(`/api/playlists/${id}`);
+      return data;
+    },
+  });
+  return (
+    <>
+      <DashboardPageLayout
+        breadcrumbs={
+          <>
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/dashboard">Dashboard</Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/dashboard/playlists">Playlists</Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>{playlist?.name ?? "Playlist"}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </>
+        }
+      >
+        <PlaylistViewNested />
       </DashboardPageLayout>
     </>
   );
@@ -316,9 +352,14 @@ export function MuseRouting() {
         <Route index element={<DashboardHome />} />
         <Route path="help" element={<HelpPage />} />
         <Route path="songs" element={<SongsPage />} />
-        <Route path="profile" element={<ProfilePage />} />
-        <Route path="profile/:id" element={<ProfilePageForUser />} />
-        <Route path="playlists" element={<PlaylistsPage />} />
+        <>
+          <Route path="profile" element={<ProfilePage />} />
+          <Route path="profile/:id" element={<ProfilePageForUser />} />
+        </>
+        <>
+          <Route path="playlists" element={<PlaylistsPage />} />
+          <Route path="playlists/:id" element={<SinglePlaylistPage />} />
+        </>
         <Route path="settings" element={<SettingsPage />} />
         <Route path="analytics" element={<AnalyticsPage />} />
         <Route path="songs/youtube" element={<YouTubeSongs />} />

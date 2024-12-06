@@ -1,9 +1,47 @@
+import { useTheme } from "@/components/theme-provider";
 import { Breadcrumb, BreadcrumbList } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
-import { SidebarTrigger } from "@/components/ui/sidebar";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
-import { BG_URL } from "@/main";
 import { ReactNode } from "react";
+import { Outlet } from "react-router";
+import { AppSidebar } from "./components/app-sidebar";
+
+export function DashboardLayout() {
+  const { theme } = useTheme();
+  const resolved = window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
+  const resolvedTheme = theme || resolved;
+  const BG_URL =
+    resolvedTheme === "light"
+      ? `https://4kwallpapers.com/images/walls/thumbs_3t/10781.png`
+      : `https://4kwallpapers.com/images/walls/thumbs_3t/19801.jpg`;
+  return (
+    <>
+      <div
+        className={`min-h-screen bg-cover bg-center bg-fixed bg-no-repeat bg-blend-darken text-white`}
+        style={{
+          backgroundImage:
+            resolvedTheme === "light"
+              ? `linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('${BG_URL}')`
+              : `linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('${BG_URL}')`,
+        }}
+      >
+        <SidebarProvider>
+          <AppSidebar />
+          <SidebarInset>
+            <Outlet />
+          </SidebarInset>
+        </SidebarProvider>
+      </div>
+    </>
+  );
+}
 
 export function DashboardPageLayout({
   children,
@@ -12,6 +50,15 @@ export function DashboardPageLayout({
   children: ReactNode;
   breadcrumbs: ReactNode;
 }) {
+  const { theme } = useTheme();
+  const resolved = window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
+  const resolvedTheme = theme || resolved;
+  const BG_URL =
+    resolvedTheme === "light"
+      ? `https://4kwallpapers.com/images/walls/thumbs_3t/10781.png`
+      : `https://4kwallpapers.com/images/walls/thumbs_3t/19801.jpg`;
   return (
     <>
       <div
@@ -19,7 +66,10 @@ export function DashboardPageLayout({
           "flex flex-col h-full bg-cover bg-center bg-fixed bg-no-repeat border border-prrimary rounded"
         )}
         style={{
-          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('${BG_URL}')`,
+          backgroundImage:
+            resolvedTheme === "light"
+              ? `linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('${BG_URL}')`
+              : `linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('${BG_URL}')`,
         }}
       >
         <header className="flex h-16 shrink-0 items-center gap-2 border-primary">

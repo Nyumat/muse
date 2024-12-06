@@ -73,3 +73,4 @@ export async function getPresignedUrl(
 
 export const BUCKET_NAME = "muse-songs";
 export const PFP_BUCKET_NAME = "muse-pfps";
+export const COVERS_BUCKET_NAME = "muse-covers";

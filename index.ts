@@ -5,6 +5,7 @@ import helmet from "helmet";
 import { connectToDB } from "./lib/database";
 import { authMiddleware, refreshTokenMiddleware } from "./lib/middleware";
 import authRouter from "./routes/auth";
+import playlistRouter from "./routes/playlists";
 import songRouter from "./routes/songs";
 import usersRouter from "./routes/users";
 import { formatDateToPST } from "./util";
@@ -31,7 +32,7 @@ const colorfulLogger = (req: Request, res: Response, next: Function) => {
   console.log(
     chalk.blue(`[${formatDateToPST(new Date())}]`),
     chalk.green(req.method),
-    chalk.yellow(req.url),
+    chalk.yellow(req.url)
   );
   next();
 };
@@ -40,6 +41,7 @@ app.use(colorfulLogger);
 
 app.use("/users", usersRouter);
 app.use("/auth", authRouter);
+app.use("/api", playlistRouter);
 app.use("/", authMiddleware, songRouter);
 app.use("/refresh-token", refreshTokenMiddleware);
 

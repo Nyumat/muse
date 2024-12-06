@@ -11,148 +11,133 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Fetcher from "@/lib/fetcher";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
+import { Loader2, Music, Plus } from "lucide-react";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { z } from "zod";
 
 const api = Fetcher.getInstance();
 
-type SongFormDataFields = {
-  title: string;
-  duration: string;
-  mediaUrl: string;
-  thumbnail: string;
-  tags: string;
-};
+// Validation schema
+const addSongSchema = z.object({
+  url: z
+    .string()
+    .url("Please enter a valid URL")
+    .refine(
+      (url) =>
+        url.includes("youtube.com") ||
+        url.includes("youtu.be") ||
+        url.includes("soundcloud.com"),
+      "URL must be from YouTube or SoundCloud"
+    ),
+});
 
-const addSong = async (data: SongFormDataFields) => {
-  await api.post("/api/songs", data);
-};
+type AddSongInput = z.infer<typeof addSongSchema>;
 
 export function AddSongDialog() {
-  const [open, setOpen] = useState(false);
-  const [songData, setSongData] = useState({
-    title: "",
-    duration: "",
-    mediaUrl: "",
-    thumbnail: "",
-    tags: "",
+  const [isOpen, setIsOpen] = useState(false);
+  const queryClient = useQueryClient();
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<AddSongInput>({
+    resolver: zodResolver(addSongSchema),
   });
 
-  const queryClient = useQueryClient();
-  const newSong = useMutation({
-    mutationFn: addSong,
+  const addSong = useMutation({
+    mutationFn: async (data: AddSongInput) => {
+      const response = await api.post("/api/songs", {
+        mediaUrl: data.url,
+      });
+      return response.data;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["songs"] });
       toast.success("Song added successfully");
+      handleClose();
     },
     onError: (error) => {
-      toast.error(
-        error instanceof AxiosError || error instanceof Error
-          ? error.message
-          : "An error occurred"
-      );
+      const errorMessage =
+        error instanceof AxiosError
+          ? error.response?.data?.error || error.message
+          : "Failed to add song";
+      toast.error(errorMessage);
     },
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setSongData((prev) => ({ ...prev, [name]: value }));
+  const handleClose = () => {
+    setIsOpen(false);
+    reset();
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    newSong.mutate(songData);
-    setSongData({
-      title: "",
-      duration: "",
-      mediaUrl: "",
-      thumbnail: "",
-      tags: "",
-    });
-    setOpen(false);
+  const onSubmit = (data: AddSongInput) => {
+    addSong.mutate(data);
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="default">Add Song</Button>
+        <Button className="bg-purple-500 hover:bg-purple-600">
+          <Plus className="mr-2 h-4 w-4" /> Add Song
+        </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="bg-black/90 backdrop-blur-lg border-purple-500/50 sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Add New Song</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <Music className="h-5 w-5" />
+            Add New Song
+          </DialogTitle>
           <DialogDescription>
-            Enter the details of the new song here. Click save when you're done.
+            Paste a YouTube or SoundCloud URL to add a song to your library
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit}>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="title" className="text-right">
-                Title
-              </Label>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="url">Song URL</Label>
               <Input
-                id="title"
-                name="title"
-                value={songData.title}
-                onChange={handleInputChange}
-                className="col-span-3"
+                id="url"
+                className="bg-black/20"
+                {...register("url")}
+                placeholder="https://youtube.com/watch?v=... or https://soundcloud.com/..."
               />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="duration" className="text-right">
-                Duration
-              </Label>
-              <Input
-                id="duration"
-                name="duration"
-                value={songData.duration}
-                onChange={handleInputChange}
-                className="col-span-3"
-                placeholder="3:30"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="mediaUrl" className="text-right">
-                Media URL
-              </Label>
-              <Input
-                id="mediaUrl"
-                name="mediaUrl"
-                value={songData.mediaUrl}
-                onChange={handleInputChange}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="thumbnail" className="text-right">
-                Thumbnail
-              </Label>
-              <Input
-                id="thumbnail"
-                name="thumbnail"
-                value={songData.thumbnail}
-                onChange={handleInputChange}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="tags" className="text-right">
-                Tags
-              </Label>
-              <Input
-                id="tags"
-                name="tags"
-                value={songData.tags}
-                onChange={handleInputChange}
-                className="col-span-3"
-                placeholder="Separate tags with commas"
-              />
+              {errors.url && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.url.message}
+                </p>
+              )}
             </div>
           </div>
-          <DialogFooter>
-            <Button type="submit">Save Song</Button>
+
+          <DialogFooter className="gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleClose}
+              className="bg-black/20"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={addSong.isPending}
+              className="bg-purple-500 hover:bg-purple-600"
+            >
+              {addSong.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Adding...
+                </>
+              ) : (
+                "Add Song"
+              )}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

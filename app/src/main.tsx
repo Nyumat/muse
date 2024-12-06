@@ -8,14 +8,9 @@ import "./index.css";
 
 const queryClient = new QueryClient();
 
-export const BG_URL =
-  localStorage.getItem("vite-ui-theme") === "dark"
-    ? `https://4kwallpapers.com/images/walls/thumbs_3t/19801.jpg`
-    : `https://4kwallpapers.com/images/walls/thumbs_3t/10781.png`;
-
 createRoot(document.getElementById("root")!).render(
   <BrowserRouter>
-    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+    <ThemeProvider defaultTheme="dark"  storageKey="theme">
       <QueryClientProvider client={queryClient}>
         <MuseRouting />
       </QueryClientProvider>

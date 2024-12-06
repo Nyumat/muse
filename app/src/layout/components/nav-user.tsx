@@ -27,10 +27,11 @@ import {
 import { User } from "@/hooks/use-user";
 import { useNavigate } from "react-router";
 
-export function NavUser({ name, username, email, pfp }: User) {
+export function NavUser({ name, username, email, pfp, _id }: User) {
   const navigate = useNavigate();
   const { isMobile } = useSidebar();
-  const user = {
+    const user = {
+      id: _id,
     name,
     email,
     username,
@@ -84,7 +85,7 @@ export function NavUser({ name, username, email, pfp }: User) {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem onClick={() => navigate("/dashboard/profile")}>
+              <DropdownMenuItem onClick={() => navigate(`/dashboard/profile/${user.id}`)}>
                 <User2 />
                 Your Proifle
               </DropdownMenuItem>
