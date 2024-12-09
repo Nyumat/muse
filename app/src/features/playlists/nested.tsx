@@ -61,7 +61,7 @@ import { toast } from "sonner";
 
 const api = Fetcher.getInstance();
 
-interface Playlist {
+export interface Playlist {
   _id: string;
   name: string;
   description?: string;
@@ -173,7 +173,7 @@ export function PlaylistViewNested() {
     // await api.put(`/api/playlists/${id}/reorder`, { songs: newOrder.map(song => song._id) });
   };
 
-  if (isLoading || !playlist) {
+  if (isLoading || !playlist || !id) {
     return <div>Loading...</div>;
   }
 
@@ -181,11 +181,9 @@ export function PlaylistViewNested() {
 
   return (
     <div className="space-y-6">
-      {/* Playlist Header */}
       <Card className="bg-black/10 backdrop-blur-md border-none shadow-sm shadow-purple-500/50 border-t-2 border-t-purple-500">
         <CardContent className="p-6">
           <div className="flex gap-6">
-            {/* Cover Image */}
             <div className="relative w-48 h-48">
               {isEditMode ? (
                 <div
@@ -214,7 +212,6 @@ export function PlaylistViewNested() {
               )}
             </div>
 
-            {/* Playlist Info */}
             <div className="flex-1">
               {isEditMode ? (
                 <form onSubmit={handleUpdatePlaylist} className="space-y-4">
@@ -331,8 +328,6 @@ export function PlaylistViewNested() {
           </div>
         </CardContent>
       </Card>
-
-      {/* Songs List */}
       <Reorder.Group
         axis="y"
         values={songs}
@@ -371,7 +366,7 @@ export function PlaylistViewNested() {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => playSong(song._id)}
+                onClick={async () => await playSong(song._id, playlist._id)}
               >
                 {currentSong?._id === song._id && isPlaying ? (
                   <Pause className="w-4 h-4" />

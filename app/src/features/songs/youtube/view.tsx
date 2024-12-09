@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/table";
 import { DashboardPageLayout } from "@/layout/page-layout";
 import Fetcher from "@/lib/fetcher";
-import { cn } from "@/lib/utils";
+import { cn, formatDuration } from "@/lib/utils";
 import { usePlayerControls } from "@/stores/audioStore";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Pencil, Play, Trash2 } from "lucide-react";
@@ -32,32 +32,12 @@ import { useState } from "react";
 import { Link } from "react-router";
 import { formatDate } from "../../../lib/utils";
 import { AddSongDialog } from "../add-song-dialog";
+import { Song } from "../dashboard/view";
 
 const api = Fetcher.getInstance();
 
-export interface Song {
-    _id: string;
-    title: string;
-    duration: number;
-    mediaUrl: string;
-    r2Key: string;
-    createdBy: string;
-    upload_date: string;
-    view_count: number;
-    thumbnail: string;
-    tags: string[];
-    stream_url: string | undefined;
-    original_url: string;
-    extractor: string;
-    duration_string: string;
-    ytdlp_id: string;
-    uploader: string;
-    createdAt: Date;
-    updatedAt: Date;
-}
-
-const getSongs = async () => {
-    const res = await api.get<Song[]>("/api/songs");
+const getSongs = async (type: string) => {
+    const res = await api.get<Song[]>(`/api/songs/${type}`);
     return res.data;
 };
 
@@ -65,16 +45,19 @@ const deleteSong = async (id: string) => {
     await api.delete(`/api/songs/${id}`);
 };
 
-export function SongsView() {
+export function YouTubeSongsView() {
     const [searchTerm, setSearchTerm] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
     const songsPerPage = 10;
     const queryClient = useQueryClient();
-    const query = useQuery({ queryKey: ["songs"], queryFn: getSongs });
+    const query = useQuery({
+        queryKey: ["songs", "youtube"],
+        queryFn: () => getSongs("youtube"),
+    });
     const removeSong = useMutation({
         mutationFn: deleteSong,
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["songs"] });
+            queryClient.invalidateQueries({ queryKey: ["songs", "youtube"] });
         },
     });
 
@@ -107,14 +90,21 @@ export function SongsView() {
                         </BreadcrumbItem>
                         <BreadcrumbSeparator />
                         <BreadcrumbItem>
-                            <BreadcrumbPage>Songs</BreadcrumbPage>
+                            <BreadcrumbLink asChild>
+                                <Link to="/dashboard/songs">Songs</Link>
+                            </BreadcrumbLink>
                         </BreadcrumbItem>
+                        <BreadcrumbSeparator />
+                        <BreadcrumbItem>
+                            <BreadcrumbPage>YouTube</BreadcrumbPage>
+                        </BreadcrumbItem>
+
                     </>
                 }
             >
                 <div className="mb-4 flex justify-between items-center">
                     <h1 className="text-2xl font-semibold dark:text-gray-200 text-gray-700">
-                        Your Muse Library
+                        Your YouTube Songs
                     </h1>
                 </div>
                 <div className="mb-4 flex justify-between items-center">
@@ -197,7 +187,6 @@ export function SongsView() {
                                     onClick={() =>
                                         setCurrentPage((prev) => Math.max(prev - 1, 1))
                                     }
-                                //   disabled={currentPage === 1}
                                 />
                             </PaginationItem>
                             {[...Array(totalPages)].map((_, index) => (
@@ -217,7 +206,6 @@ export function SongsView() {
                                     onClick={() =>
                                         setCurrentPage((prev) => Math.min(prev + 1, totalPages))
                                     }
-                                //   disabled={currentPage === totalPages}
                                 />
                             </PaginationItem>
                         </PaginationContent>
@@ -226,10 +214,4 @@ export function SongsView() {
             </DashboardPageLayout>
         </>
     );
-}
-
-function formatDuration(seconds: number): string {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
 }

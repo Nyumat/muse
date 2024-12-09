@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Song } from "@/features/songs/dashboard/view";
 import Fetcher from "@/lib/fetcher";
 import { usePlayerControls } from "@/stores/audioStore";
 import { useQuery } from "@tanstack/react-query";
@@ -9,20 +8,9 @@ import { Globe, Loader2, Lock, Play, Users } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { CreatePlaylistDialog } from "./create-dialog";
+import { Playlist } from "./nested";
 
 const api = Fetcher.getInstance();
-
-export interface Playlist {
-  _id: string;
-  name: string;
-  description: string;
-  coverImage: string;
-  visibility: "private" | "public" | "friends";
-  songs: Song[];
-  createdBy: string;
-  createdAt: string;
-  updatedAt: string;
-}
 
 export function PlaylistView() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -40,7 +28,7 @@ export function PlaylistView() {
   const filteredPlaylists = playlists?.filter(
     (playlist) =>
       playlist.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      playlist.description.toLowerCase().includes(searchTerm.toLowerCase())
+      playlist.description?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -64,7 +52,7 @@ export function PlaylistView() {
           filteredPlaylists?.map((playlist) => (
             <Card
               key={playlist._id}
-              className="group bg-black/10 backdrop-blur-md border-none shadow-sm hover:shadow-md hover:shadow-purple-500/30 transition-all duration-300 cursor-pointer"
+              className="group bg-black/10 backdrop-blur-md shadow-sm hover:shadow-md hover:shadow-purple-500/30 transition-all duration-300 cursor-pointer"
               onClick={() => navigate(`/dashboard/playlists/${playlist._id}`)}
             >
               <CardContent className="p-6">
@@ -79,10 +67,10 @@ export function PlaylistView() {
                       variant="secondary"
                       size="icon"
                       className="absolute bottom-4 right-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300"
-                      onClick={(e) => {
+                      onClick={async (e) => {
                         e.stopPropagation();
                         if (playlist.songs.length > 0) {
-                          playSong(playlist.songs[0]._id);
+                          await playSong(playlist.songs[0]._id, playlist._id);
                         }
                       }}
                     >

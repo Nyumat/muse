@@ -4,35 +4,22 @@ import { config } from "dotenv";
 
 config({ path: ".env.local" });
 
-if (!process.env.R2_ACCOUNT_ID) {
-  console.error("R2_ACCOUNT_ID missing");
-  process.exit(1);
-}
+const requiredEnvVars = [
+  "R2_ACCOUNT_ID",
+  "R2_ACCESS_KEY_ID",
+  "R2_SECRET_ACCESS_KEY",
+  "R2_BUCKET_NAME",
+  "PFP_BUCKET_NAME",
+    "R2_ENDPOINT",
+    "COVERS_BUCKET_NAME",
+];
 
-if (!process.env.R2_ACCESS_KEY_ID) {
-  console.error("R2_ACCESS_KEY_ID missing");
-  process.exit(1);
-}
-
-if (!process.env.R2_SECRET_ACCESS_KEY) {
-  console.error("R2_SECRET_ACCESS_KEY missing");
-  process.exit(1);
-}
-
-if (!process.env.R2_BUCKET_NAME) {
-  console.error("R2_BUCKET_NAME missing");
-  process.exit(1);
-}
-
-if (!process.env.PFP_BUCKET_NAME) {
-  console.error("PFP_BUCKET_NAME missing");
-  process.exit(1);
-}
-
-if (!process.env.R2_ENDPOINT) {
-  console.error("R2_ENDPOINT missing");
-  process.exit(1);
-}
+requiredEnvVars.forEach((envVar) => {
+  if (!process.env[envVar]) {
+    console.error(`${envVar} missing`);
+    process.exit(1);
+  }
+});
 
 export const R2 = new S3Client({
   region: "auto",
@@ -43,19 +30,17 @@ export const R2 = new S3Client({
   },
 });
 
-export async function getPresignedUrl(
-  key: string,
-  expiresIn?: number,
-  bucket?: string
-) {
-  if (!bucket) {
-    bucket = process.env.R2_BUCKET_NAME!;
-  } else if (bucket.includes("pfp")) {
-    bucket = process.env.PFP_BUCKET_NAME!;
-  } else {
-    bucket = process.env.R2_BUCKET_NAME!;
-  }
+interface PresignedUrlParams {
+  key: string;
+  expiresIn?: number;
+  bucket: string;
+}
 
+export async function getPresignedUrl({
+  key,
+  expiresIn,
+  bucket
+}: PresignedUrlParams) {
   const command = new GetObjectCommand({
     Bucket: bucket,
     Key: key,
@@ -71,6 +56,6 @@ export async function getPresignedUrl(
   }
 }
 
-export const BUCKET_NAME = "muse-songs";
-export const PFP_BUCKET_NAME = "muse-pfps";
-export const COVERS_BUCKET_NAME = "muse-covers";
+export const BUCKET_NAME = process.env.R2_BUCKET_NAME!;
+export const PFP_BUCKET_NAME = process.env.PFP_BUCKET_NAME!;
+export const COVERS_BUCKET_NAME = process.env.COVERS_BUCKET_NAME!;

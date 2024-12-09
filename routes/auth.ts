@@ -174,7 +174,7 @@ router.put(
 
         updates.pfp = key;
 
-        pfpUrl = await getPresignedUrl(key, 60 * 60 * 24 * 7, PFP_BUCKET_NAME);
+          pfpUrl = await getPresignedUrl({ key, expiresIn: 60 * 60 * 24 * 7, bucket: PFP_BUCKET_NAME });
 
         updates.pfp = pfpUrl;
       }
