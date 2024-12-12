@@ -31,7 +31,6 @@ import { useUser } from "@/hooks/use-user";
 import {
     AudioLines,
     ChevronRight,
-    Folder,
     ListMusic,
     MoreHorizontal,
     Share,
