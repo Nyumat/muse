@@ -64,6 +64,10 @@ app.use("/api", playlistRouter);
 app.use("/", authMiddleware, songRouter);
 app.use("/refresh-token", refreshTokenMiddleware);
 
+app.get("/health", (_, res) => {
+    res.status(200).send("OK");
+});
+
 app.listen(port, async () => {
     await connectToDB();
     console.log(`The server is running at http://localhost:${port}`);
