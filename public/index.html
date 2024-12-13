@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Muse API - Home</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Muse API">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="theme-color" content="#a117f4">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="description"
+        content="The official API documentation for Muse, a next-generation music streaming platform.">
+    <meta name="keywords" content="music, streaming, platform, api, songs, playlists, users">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Gill+Sans">
+    <link rel="icon" href="/favicon.png" type="image/png">
+    <style>
+        :root {
+            --bg-color: #f2f2f2;
+            --text-color: #000;
+            --accent-color: #a117f4;
+            --border-radius: 12px;
+            --border-width: 4px;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        header,
+        section {
+            margin: 40px;
+            padding: 20px;
+            background: #fff;
+            border: var(--border-width) solid var(--text-color);
+            border-radius: var(--border-radius);
+            box-shadow: 10px 10px 0px #000;
+        }
+
+        header {
+            text-align: center;
+        }
+
+        h1,
+        h2,
+        h3 {
+            margin: 0 0 20px 0;
+        }
+
+        p {
+            line-height: 1.6;
+        }
+
+        nav {
+            margin-top: 20px;
+        }
+
+        a {
+            text-decoration: none;
+            color: var(--text-color);
+            font-weight: bold;
+            border-bottom: 2px solid var(--accent-color);
+        }
+
+        pre {
+            background: #e0e0e0;
+            padding: 15px;
+            border: var(--border-width) solid var(--text-color);
+            border-radius: var(--border-radius);
+            box-shadow: 5px 5px 0px #000;
+            overflow-x: auto;
+        }
+
+        code {
+            font-family: monospace;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            margin-top: 20px;
+            background: var(--accent-color);
+            color: #fff;
+            border: var(--border-width) solid var(--text-color);
+            border-radius: var(--border-radius);
+            box-shadow: 5px 5px 0px #000;
+        }
+
+        .button:hover {
+            background: #e64a19;
+        }
+
+        footer {
+            text-align: center;
+            margin: 40px;
+            padding: 10px;
+            background: #fff;
+            border: var(--border-width) solid var(--text-color);
+            border-radius: var(--border-radius);
+            box-shadow: 5px 5px 0px #000;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>Muse API</h1>
+        <p>Next-generation music streaming platform</p>
+        <nav>
+            <a href="#introduction">Introduction</a> |
+            <a href="#api">API Documentation</a> |
+            <a href="#data-model">Data Model</a>
+        </nav>
+    </header>
+
+    <section id="introduction">
+        <h2>Introduction</h2>
+        <p>
+            Muse is a next-generation music streaming platform that allows users to upload songs, create playlists, and
+            share music with others. This API provides endpoints to interact with songs, playlists, and user profiles,
+            enabling developers to build rich applications on top of the Muse platform.
+        </p>
+        <a href="#api" class="button">Explore the API</a>
+    </section>
+
+    <section id="api">
+        <h2>API Docs</h2>
+        <h3>Authentication</h3>
+        <p>
+            All API endpoints require authentication using JWT tokens. Obtain a token by registering and logging in
+            through the authentication endpoints.
+        </p>
+
+        <h3>Endpoints</h3>
+        <pre><code>// Songs
+GET /api/songs
+GET /api/songs/{id}
+POST /api/songs
+PUT /api/songs/{id}
+DELETE /api/songs/{id}
+
+// Playlists
+GET /api/playlists
+GET /api/playlists/{id}
+POST /api/playlists
+PUT /api/playlists/{id}
+DELETE /api/playlists/{id}
+
+// Users
+GET /api/users
+GET /api/users/{id}
+POST /api/users
+PUT /api/users/{id}
+DELETE /api/users/{id}
+    </code></pre>
+
+        <h3>An example: Retrieve All Songs</h3>
+        <pre><code>GET /api/songs
+
+Response:
+[
+    {
+        _id: new ObjectId('0909090'),
+        title: 'DTM - RALLY HOUSE',
+        duration: 97,
+        mediaUrl: 'https://www.youtube.com/watch?v=MQzyJizg4iU',
+        r2Key: 'songs/7fc913eb8c07b8e144ea62fc33e4c03e.mp3',
+        createdBy: new ObjectId('9999999'),
+        upload_date: '1711321213',
+        view_count: 5030,
+        thumbnail: 'https://i.ytimg.com/vi/MQzyJizg4iU/maxresdefault.jpg',
+        tags: [],
+        original_url: 'https://www.youtube.com/watch?v=MQzyJizg4iU',
+        extractor: 'youtube',
+        duration_string: '1:37',
+        ytdlp_id: 'MQzyJizg4iU',
+        uploader: 'Phonk Music Channel',
+        createdAt: 2024-12-01T14:51:17.826Z,
+        updatedAt: 2024-12-01T14:51:17.826Z,
+        __v: 0,
+        stream_url:
+        'https://muse-songs.r2.cloudflarestorage.com/songs/...'
+    },
+  ...
+]
+    </code></pre>
+    </section>
+
+    <section id="data-model">
+        <h2>Muse Data Model</h2>
+        <h3>Song</h3>
+        <pre><code>{
+  "id": "string",
+  "title": "string",
+  "duration": "number",
+  "mediaUrl": "string",
+  "r2Key": "string",
+  "createdBy": "string",
+  "upload_date": "string",
+  "view_count": "number",
+  "thumbnail": "string",
+  "tags": ["string"],
+  "original_url": "string",
+  "stream_url": "string",
+  "extractor": "string",
+  "duration_string": "string",
+  "ytdlp_id": "string",
+  "uploader": "string",
+  "createdAt": "date",
+  "updatedAt": "date"
+}
+    </code></pre>
+
+        <h3>Playlist</h3>
+        <pre><code>{
+  "id": "string",
+  "name": "string",
+  "description": "string",
+  "coverImage": "string",
+  "visibility": "public | private | friends",
+  "createdBy": "string",
+  "songs": ["string"],
+  "createdAt": "date",
+  "updatedAt": "date"
+}
+    </code></pre>
+
+        <h3>User</h3>
+        <pre><code>{
+  "id": "string",
+  "username": "string",
+  "email": "string",
+  "password": "string",
+  "name": "string",
+  "pfp": "string",
+  "bio": "string",
+  "songs": ["string"],
+  "createdAt": "date",
+  "updatedAt": "date"
+}
+    </code></pre>
+    </section>
+
+    <footer>
+        &copy; Muse API. All rights reserved.
+        <a target="_blank" href="https://icons8.com/icon/6kZJJLGGJV7f/music">Music</a> icon by <a target="_blank"
+            href="https://icons8.com">Icons8</a>
+    </footer>
+
+</body>
+
+</html>

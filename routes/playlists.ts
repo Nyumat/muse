@@ -127,6 +127,8 @@ router.get(
                 }
             }
 
+            console.log(playlist);
+
             res.json(playlist);
         } catch (error) {
             console.error(error);

@@ -227,7 +227,6 @@ router.get("/api/songs", async (req, res) => {
                 await Song.deleteOne({ _id: song._id });
             }
         }
-
         res.json(songs);
     } catch (error) {
         console.error("Error fetching songs:", error);

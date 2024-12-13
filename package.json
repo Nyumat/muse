@@ -4,8 +4,8 @@
     "description": "Muse is a web application that allows users to upload songs and create playlists.",
     "main": "index.js",
     "scripts": {
-        "dev": "npx tsx --env-file=.env.local --watch index.ts",
-        "start": "npx tsx --env-file=.env.production index.ts"
+        "dev": "tsx --env-file=.env.local --watch index.ts",
+        "start": "tsx --env-file=.env.production index.ts"
     },
     "keywords": [],
     "author": "",
@@ -18,18 +18,21 @@
         "cors": "^2.8.5",
         "dotenv": "^16.4.5",
         "express": "^4.21.1",
-        "framer-motion": "^11.13.1",
+        "framer-motion": "^11.13.5",
         "helmet": "^8.0.0",
         "jsonwebtoken": "^9.0.2",
         "mongodb": "^6.11.0",
         "mongoose": "^8.8.3",
         "multer": "^1.4.5-lts.1",
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0",
         "tsconfig-paths": "^4.2.0",
-        "tsx": "^4.0.0",
+        "tsx": "^4.19.2",
         "ws": "^8.18.0",
         "zod": "^3.23.8"
     },
     "devDependencies": {
+        "@flydotio/dockerfile": "^0.5.9",
         "@types/bcryptjs": "^2.4.6",
         "@types/cors": "^2.8.17",
         "@types/express": "^4.17.21",
@@ -38,7 +41,6 @@
         "@types/node": "^22.10.1",
         "@types/ws": "^8.5.13",
         "nodemon": "^3.1.7",
-        "tsx": "^4.0.0",
         "typescript": "^5.7.2"
     },
     "type": "module"
