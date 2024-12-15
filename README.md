@@ -1,5 +1,7 @@
 # Muse
 
+
+
 Muse is a web application that allows users to upload songs and listen to them. Unlike other music streaming services, Muse allows users to upload their own music and share it with others. Muse is built with Next.js, TypeScript, and Tailwind CSS.
 
 ## Getting Started

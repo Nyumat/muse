@@ -3,16 +3,22 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Muse API - Home</title>
+    <title>Muse API - Documentation</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="author" content="Muse API">
     <meta name="robots" content="noindex, nofollow">
     <meta name="theme-color" content="#a117f4">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="description"
-        content="The official API documentation for Muse, a next-generation music streaming platform.">
-    <meta name="keywords" content="music, streaming, platform, api, songs, playlists, users">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="title" content="The Official Muse API Documentation">
+    <meta name="description" content="Backend API documentation for Muse, a free, next-generation music streaming platform.">
+    <meta name="keywords" content="free music, music, audio, streaming, platform, api, songs, playlists, users, muse, nyumat, github, api, documentation">
+    <meta property="og:title" content="The Official Muse API Documentation">
+    <meta property="og:site_name" content="Muse API Documentation">
+    <meta property="og:url" content="https://museisfun.fly.dev" />
+    <meta property="og:description" content="Backend API documentation for Muse, a free, next-generation music streaming platform.">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://museisfun.fly.dev/og.png">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Gill+Sans">
     <link rel="icon" href="/favicon.png" type="image/png">
     <style>
@@ -107,155 +113,499 @@
             border-radius: var(--border-radius);
             box-shadow: 5px 5px 0px #000;
         }
+
+        .endpoint {
+            margin: 20px 0;
+            padding: 15px;
+            background: #fff;
+            border: 2px solid var(--text-color);
+            border-radius: var(--border-radius);
+        }
+
+        .method {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .get {
+            background: #61affe;
+        }
+
+        .post {
+            background: #49cc90;
+        }
+
+        .put {
+            background: #fca130;
+        }
+
+        .delete {
+            background: #f93e3e;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            border: 2px solid var(--text-color);
+            text-align: left;
+        }
+
+        th {
+            background: #e0e0e0;
+        }
+
+        .github-corner {
+            position: absolute;
+            top: 0;
+            right: 0;
+        }
+
+        .response-example {
+            margin-top: 10px;
+            border-left: 4px solid var(--accent-color);
+            padding-left: 15px;
+        }
+
+        .scroll-top {
+            display: none;
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 15px;
+            background: var(--accent-color);
+            color: white;
+            border: var(--border-width) solid var(--text-color);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            box-shadow: 5px 5px 0px #000;
+            transition: transform 0.2s;
+            z-index: 1000;
+            font-weight: bold;
+            font-family: 'Gill Sans', sans-serif;
+        }
+
+        .scroll-top:hover {
+            transform: translateY(-2px);
+        }
+
+        .scroll-top:active {
+            transform: translate(2px, 2px);
+            box-shadow: 3px 3px 0px #000;
+        }
     </style>
 </head>
 
 <body>
+    <a href="https://github.com/nyumat/muse" class="github-corner" aria-label="View source on GitHub">
+        <svg width="80" height="80" viewBox="0 0 250 250"
+            style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true">
+            <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+            <path
+                d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+                fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+            <path
+                d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+                fill="currentColor" class="octo-body"></path>
+        </svg>
+    </a>
 
     <header>
-        <h1>Muse API</h1>
-        <p>Next-generation music streaming platform</p>
+        <h1>Muse API Documentation</h1>
+        <p>Complete API specification for the Muse music streaming platform</p>
+        Made with love by <a href="https://github.com/nyumat">@nyumat</a>
         <nav>
-            <a href="#introduction">Introduction</a> |
-            <a href="#api">API Documentation</a> |
-            <a href="#data-model">Data Model</a>
+            <a href="#authentication">Authentication</a> |
+            <a href="#songs">Songs</a> |
+            <a href="#playlists">Playlists</a> |
+            <a href="#users">Users</a> |
+            <a href="#errors">Errors</a>
         </nav>
     </header>
 
-    <section id="introduction">
-        <h2>Introduction</h2>
-        <p>
-            Muse is an audio-based streaming platform which allows users to upload songs, create playlists, and
-            share music with others. This API provides endpoints to interact with songs, playlists, and user profiles,
-            enabling developers to build rich applications on top of the Muse platform.
-        </p>
-        <a href="#api" class="button">Explore the API</a>
+    <section id="authentication">
+        <h2>Authentication</h2>
+        <p>Most of the Muse API uses JWT tokens for authentication. To authorize your client, include a token in the
+            Authorization header:</p>
+        <pre><code>Authorization: Bearer &lt;your_jwt_token&gt;</code></pre>
+
+        <div class="endpoint">
+            <span class="method post">POST</span>
+            <code>/auth/register</code>
+            <p>Register a new user account.</p>
+            <pre><code>// Request Body
+{
+    "email": "string",
+    "password": "string",
+    "name": "string",
+    "username": "string"
+}
+
+// Response Example
+{
+    "message": "User created successfully",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}</code></pre>
+        </div>
+
+        <div class="endpoint">
+            <span class="method post">POST</span>
+            <code>/auth/login</code>
+            <p>Authenticate a user and receive a JWT token.</p>
+            <pre><code>// Request Body
+{
+    "username": "string",
+    "password": "string"
+}
+
+// Response Example
+{
+    "message": "Login successful",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}</code></pre>
+        </div>
     </section>
 
-    <section id="api">
-        <h2>API Docs</h2>
-        <h3>Authentication</h3>
-        <p>
-            Each of the API endpoints require authentication using JWT tokens. Obtain a token by registering and logging in
-            through the authentication endpoints.
-        </p>
+    <section id="songs">
+        <h2>Songs</h2>
 
-        <h3>Endpoints</h3>
-        <pre><code>// Songs
-GET /api/songs
-GET /api/songs/{id}
-POST /api/songs
-PUT /api/songs/{id}
-DELETE /api/songs/{id}
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <code>/api/songs</code>
+            <p>Retrieve all songs for the authenticated user.</p>
+            <pre><code>// Response Example
+[{
+    "_id": "65fb1234c8e123456789abcd",
+    "title": "Never Gonna Give You Up",
+    "duration": 213,
+    "mediaUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    "r2Key": "songs/7fc913eb8c07b8e144ea62fc33e4c03e.mp3",
+    "createdBy": "65fb1234c8e123456789abce",
+    "upload_date": "1711321213",
+    "view_count": 1234567890,
+    "thumbnail": "https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg",
+    "tags": ["pop", "80s"],
+    "original_url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    "stream_url": "https://muse-songs.r2.cloudflarestorage.com/songs/...",
+    "extractor": "youtube",
+    "duration_string": "3:33",
+    "ytdlp_id": "dQw4w9WgXcQ",
+    "uploader": "Rick Astley",
+    "listeningTime": 1800,
+    "createdAt": "2024-03-20T12:00:00.000Z",
+    "updatedAt": "2024-03-20T12:00:00.000Z"
+}]</code></pre>
+        </div>
 
-// Playlists
-GET /api/playlists
-GET /api/playlists/{id}
-POST /api/playlists
-PUT /api/playlists/{id}
-DELETE /api/playlists/{id}
+        <div class="endpoint">
+            <span class="method post">POST</span>
+            <code>/api/songs</code>
+            <p>Upload a new song from a supported platform (YouTube, SoundCloud).</p>
+            <pre><code>// Request Body
+{
+    "mediaUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+}
 
-// Users
-GET /api/users
-GET /api/users/{id}
-POST /api/users
-PUT /api/users/{id}
-DELETE /api/users/{id}
-    </code></pre>
+// Response Example
+{
+    "message": "Song uploaded successfully",
+    "songId": "65fb1234c8e123456789abcd"
+}</code></pre>
+        </div>
 
-        <h3>An example: Retrieve All Songs</h3>
-        <pre><code>GET /api/songs
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <code>/api/songs/:id/stream</code>
+            <p>Get a temporary streaming URL for a song.</p>
+            <pre><code>// Response Example
+{
+    "url": "https://muse-songs.r2.cloudflarestorage.com/songs/7fc913eb8c07b8e144ea62fc33e4c03e.mp3?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=..."
+}</code></pre>
+        </div>
 
-Response:
-[
-    {
-        _id: new ObjectId('0909090'),
-        title: 'DTM - RALLY HOUSE',
-        duration: 97,
-        mediaUrl: 'https://www.youtube.com/watch?v=MQzyJizg4iU',
-        r2Key: 'songs/7fc913eb8c07b8e144ea62fc33e4c03e.mp3',
-        createdBy: new ObjectId('9999999'),
-        upload_date: '1711321213',
-        view_count: 5030,
-        thumbnail: 'https://i.ytimg.com/vi/MQzyJizg4iU/maxresdefault.jpg',
-        tags: [],
-        original_url: 'https://www.youtube.com/watch?v=MQzyJizg4iU',
-        extractor: 'youtube',
-        duration_string: '1:37',
-        ytdlp_id: 'MQzyJizg4iU',
-        uploader: 'Phonk Music Channel',
-        createdAt: 2024-12-01T14:51:17.826Z,
-        updatedAt: 2024-12-01T14:51:17.826Z,
-        __v: 0,
-        stream_url:
-        'https://muse-songs.r2.cloudflarestorage.com/songs/...'
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <code>/api/songs/:type</code>
+            <p>Get songs by platform type (youtube, soundcloud).</p>
+            <pre><code>// Response Example
+[{
+    "_id": "65fb1234c8e123456789abcd",
+    "title": "Never Gonna Give You Up",
+    "duration": 213,
+    "thumbnail": "https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg",
+    "stream_url": "https://muse-songs.r2.cloudflarestorage.com/songs/...",
+    "uploader": "Rick Astley",
+    "listeningTime": 1800
+}]</code></pre>
+        </div>
+
+        <div class="endpoint">
+            <span class="method post">POST</span>
+            <code>/api/songs/:id/listen</code>
+            <p>Update listening time for a song.</p>
+            <pre><code>// Request Body
+{
+    "time": 300  // 5 minutes in seconds
+}
+
+// Response Example
+{
+    "message": "Listening time updated"
+}</code></pre>
+        </div>
+    </section>
+
+    <section id="playlists">
+        <h2>Playlists</h2>
+
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <code>/api/playlists</code>
+            <p>Get all playlists for the authenticated user.</p>
+            <pre><code>// Response Example
+[{
+    "_id": "65fb1234c8e123456789abcd",
+    "name": "80s Hits",
+    "description": "Best songs from the 80s",
+    "coverImage": "https://muse-covers.r2.cloudflarestorage.com/covers/...",
+    "visibility": "public",
+    "createdBy": {
+        "_id": "65fb1234c8e123456789abce",
+        "username": "musiclover"
     },
-  ...
-]
-    </code></pre>
+    "songs": [{
+        "_id": "65fb1234c8e123456789abcd",
+        "title": "Never Gonna Give You Up",
+        "duration": 213,
+        "thumbnail": "https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg",
+        "stream_url": "https://muse-songs.r2.cloudflarestorage.com/songs/..."
+    }],
+    "playCount": 42,
+    "createdAt": "2024-03-20T12:00:00.000Z",
+    "updatedAt": "2024-03-20T12:00:00.000Z"
+}]</code></pre>
+        </div>
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <code>/api/playlists/:id</code>
+            <p>Get a specific playlist.</p>
+            <pre><code>// Response Example
+{
+    "_id": "65fb1234c8e123456789abcd",
+    "name": "80s Hits",
+    "description": "Best songs from the 80s",
+    "coverImage": "https://muse-covers.r2.cloudflarestorage.com/covers/abc123.jpg",
+    "visibility": "public",
+    "createdBy": {
+        "_id": "65fb1234c8e123456789abce",
+        "username": "musiclover"
+    },
+    "songs": [{
+        "_id": "65fb1234c8e123456789abcd",
+        "title": "Never Gonna Give You Up",
+        "duration": 213,
+        "thumbnail": "https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg",
+        "stream_url": "https://muse-songs.r2.cloudflarestorage.com/songs/..."
+    }],
+    "playCount": 42,
+    "createdAt": "2024-03-20T12:00:00.000Z",
+    "updatedAt": "2024-03-20T12:00:00.000Z"
+}</code></pre>
+        </div>
+
+        <div class="endpoint">
+            <span class="method put">PUT</span>
+            <code>/api/playlists/:id</code>
+            <p>Update a playlist.</p>
+            <pre><code>// Request Body (multipart/form-data)
+{
+    "name": "90s Hits",
+    "description": "Best songs from the 90s",
+    "isPublic": true,
+    "cover": File  // Optional
+}
+
+// Response Example
+{
+    "_id": "65fb1234c8e123456789abcd",
+    "name": "90s Hits",
+    "description": "Best songs from the 90s",
+    "coverImage": "https://muse-covers.r2.cloudflarestorage.com/covers/xyz789.jpg",
+    "visibility": "public",
+    "createdBy": {
+        "_id": "65fb1234c8e123456789abce",
+        "username": "musiclover"
+    },
+    "songs": [...],
+    "playCount": 42,
+    "updatedAt": "2024-03-20T12:30:00.000Z"
+}</code></pre>
+        </div>
+
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <code>/api/playlists/:userId/most-played</code>
+            <p>Get user's most played playlists.</p>
+            <pre><code>// Response Example
+[{
+    "_id": "65fb1234c8e123456789abcd",
+    "name": "80s Hits",
+    "description": "Best songs from the 80s",
+    "coverImage": "https://muse-covers.r2.cloudflarestorage.com/covers/abc123.jpg",
+    "playCount": 150,
+    "songs": [{
+        "_id": "65fb1234c8e123456789abcd",
+        "title": "Never Gonna Give You Up",
+        "stream_url": "https://muse-songs.r2.cloudflarestorage.com/songs/..."
+    }]
+}]</code></pre>
+        </div>
+
+        <div class="endpoint">
+            <span class="method post">POST</span>
+            <code>/api/playlists/:id/songs</code>
+            <p>Add a song to a playlist.</p>
+            <pre><code>// Request Body
+{
+    "songId": "65fb1234c8e123456789abcd"
+}
+
+// Response Example
+{
+    "_id": "65fb1234c8e123456789abcd",
+    "name": "80s Hits",
+    "songs": [{
+        "_id": "65fb1234c8e123456789abcd",
+        "title": "Never Gonna Give You Up",
+        "stream_url": "https://muse-songs.r2.cloudflarestorage.com/songs/..."
+    }],
+    "updatedAt": "2024-03-20T12:30:00.000Z"
+}</code></pre>
+        </div>
     </section>
 
-    <section id="data-model">
-        <h2>Muse Data Model</h2>
-        <h3>Song</h3>
-        <pre><code>{
-  "id": "string",
-  "title": "string",
-  "duration": "number",
-  "mediaUrl": "string",
-  "r2Key": "string",
-  "createdBy": "string",
-  "upload_date": "string",
-  "view_count": "number",
-  "thumbnail": "string",
-  "tags": ["string"],
-  "original_url": "string",
-  "stream_url": "string",
-  "extractor": "string",
-  "duration_string": "string",
-  "ytdlp_id": "string",
-  "uploader": "string",
-  "createdAt": "date",
-  "updatedAt": "date"
-}
-    </code></pre>
+    <section id="users">
+        <h2>Users</h2>
 
-        <h3>Playlist</h3>
-        <pre><code>{
-  "id": "string",
-  "name": "string",
-  "description": "string",
-  "coverImage": "string",
-  "visibility": "public | private | friends",
-  "createdBy": "string",
-  "songs": ["string"],
-  "createdAt": "date",
-  "updatedAt": "date"
-}
-    </code></pre>
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <code>/users</code>
+            <p>Get all users (excluding passwords).</p>
+            <pre><code>// Response Example
+[{
+    "_id": "65fb1234c8e123456789abce",
+    "username": "musiclover",
+    "email": "user@example.com",
+    "name": "Music Lover",
+    "pfp": "https://muse-pfp.r2.cloudflarestorage.com/pfp/abc123.jpg",
+    "bio": "I love music!",
+    "songs": [{
+        "_id": "65fb1234c8e123456789abcd",
+        "title": "Never Gonna Give You Up"
+    }],
+    "createdAt": "2024-03-20T12:00:00.000Z"
+}]</code></pre>
+        </div>
 
-        <h3>User</h3>
-        <pre><code>{
-  "id": "string",
-  "username": "string",
-  "email": "string",
-  "password": "string",
-  "name": "string",
-  "pfp": "string",
-  "bio": "string",
-  "songs": ["string"],
-  "createdAt": "date",
-  "updatedAt": "date"
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <code>/users/data/stats</code>
+            <p>Get user statistics.</p>
+            <pre><code>// Response Example
+{
+    "totalDownloads": 42,
+    "storageUsed": "128.45",  // in MB
+    "totalPlaylists": 5,
+    "totalListeningTime": "24.5"  // in hours
+}</code></pre>
+        </div>
+
+        <div class="endpoint">
+            <span class="method put">PUT</span>
+            <code>/auth/update</code>
+            <p>Update user profile.</p>
+            <pre><code>// Request Body (multipart/form-data)
+{
+    "username": "newusername",
+    "email": "newemail@example.com",
+    "name": "New Name",
+    "bio": "New bio",
+    "password": "newpassword",
+    "pfp": File  // Optional profile picture
 }
-    </code></pre>
+
+// Response Example
+{
+    "updatedUser": {
+        "_id": "65fb1234c8e123456789abce",
+        "username": "newusername",
+        "email": "newemail@example.com",
+        "name": "New Name",
+        "pfp": "https://muse-pfp.r2.cloudflarestorage.com/pfp/xyz789.jpg",
+        "bio": "New bio",
+        "updatedAt": "2024-03-20T12:30:00.000Z"
+    },
+    "newToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}</code></pre>
+        </div>
     </section>
+
+    <section id="errors">
+        <h2>Error Responses</h2>
+        <table>
+            <tr>
+                <th>Status Code</th>
+                <th>Description</th>
+                <th>Example</th>
+            </tr>
+            <tr>
+                <td>400</td>
+                <td>Bad Request - Invalid input parameters</td>
+                <td><code>{"error": "Email and password are required."}</code></td>
+            </tr>
+            <tr>
+                <td>401</td>
+                <td>Unauthorized - Missing or invalid authentication token</td>
+                <td><code>{"error": "Invalid or expired token."}</code></td>
+            </tr>
+            <tr>
+                <td>403</td>
+                <td>Forbidden - Not permitted to perform the action</td>
+                <td><code>{"error": "Access denied"}</code></td>
+            </tr>
+            <tr>
+                <td>404</td>
+                <td>Not Found - Resource doesn't exist</td>
+                <td><code>{"error": "Song not found"}</code></td>
+            </tr>
+            <tr>
+                <td>500</td>
+                <td>Internal Server Error - Server-side error occurred</td>
+                <td><code>{"error": "Failed to connect to database"}</code></td>
+            </tr>
+        </table>
+    </section>
+
+    <button id="scrollTopButton" class="scroll-top">
+        Scroll to Top
+    </button>
+
 
     <footer>
-        &copy; Muse API. All rights reserved.
-        <a target="_blank" href="https://icons8.com/icon/6kZJJLGGJV7f/music">Music</a> icon by <a target="_blank"
-            href="https://icons8.com">Icons8</a>
+        <p>
+            <a href="https://github.com/nyumat/muse">View on GitHub</a>
+        </p>
     </footer>
 
+    <script src="/scroll.js"></script>
 </body>
 
 </html>

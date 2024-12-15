@@ -26,6 +26,10 @@ export const useUser = (): UseQueryResult<User, Error> => {
           navigate("/login");
           toast.error("Your session has expired. Please log in again.");
           localStorage.removeItem("token");
+        } else {
+            navigate("/login");
+            toast.error(err as any);
+            localStorage.removeItem("token");
         }
         throw err;
       }

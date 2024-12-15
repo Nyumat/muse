@@ -267,7 +267,6 @@ function SettingsPage() {
 
 
 export function MuseRouting() {
-    const title = "Muse";
     return (
         <Routes>
             <Route index element={<App />} />
@@ -329,7 +328,7 @@ function StubDashboardHome() {
         },
     });
 
-    const { data: recentlyDownloaded, isLoading } = useQuery({
+    const { data: recentlyDownloaded } = useQuery({
         queryKey: ["recently-downloaded"],
         queryFn: async () => {
             const { data } = await Fetcher.getInstance().get("/api/songs/downloads/recent");
@@ -390,7 +389,7 @@ function StubDashboardHome() {
                 </header>
                 <main className="flex-1 overflow-auto">
                     <div className="container mx-auto p-4 space-y-6"> {/* TODO: Maybe add container or max-w? */}
-                        <h1 className="text-3xl font-bold tracking-tight">
+                        <h1 className="text-xl md:text-3xl font-bold tracking-tight">
                             {getMessage()},{" "}
                             {user?.data?.username}.</h1>
                         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -444,7 +443,7 @@ function StubDashboardHome() {
                             </Card>
                         </div>
                         <div className="grid gap-6 md:grid-cols-2">
-                            <Card className="w-full bg-secondary">
+                            <Card className="bg-secondary">
                                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                                     <div className="space-y-1">
                                         <CardTitle className="text-2xl font-bold flex items-center gap-2">
@@ -496,12 +495,12 @@ function StubDashboardHome() {
                                                     size="icon"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        setFavoriteTracks((prev) => prev.map((t) => t.title === track.title ? { ...t, isFavorited: !t.isFavorited } : t))
+                                                        // setFavoriteTracks((prev) => prev.map((t) => t.title === track.title ? { ...t, isFavorited: !t.isFavorited } : t))
                                                     }}
                                                     className="opacity-0 group-hover:opacity-100 transition-opacity"
                                                 >
                                                     <Heart
-                                                        className={`h-4 w-4 ${track.isFavorited ? "fill-red-500 text-red-500" : ""}`}
+                                                        // className={`h-4 w-4 ${track.isFavorited ? "fill-red-500 text-red-500" : ""}`}
                                                     />
                                                 </Button>
                                             </div>
