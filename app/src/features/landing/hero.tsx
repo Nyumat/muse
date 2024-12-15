@@ -11,10 +11,11 @@ export const HeroSection: React.FC = () => {
     const { data: user } = useUser();
 
     const fadeIn = {
-        hidden: { opacity: 0, y: 70 },
+        hidden: { opacity: 0, y: 400, x: -56 },
         visible: {
             opacity: 1,
             y: 0,
+            x:0,
             transition: {
                 duration: 0.9,
                 ease: "easeOut",
@@ -24,18 +25,18 @@ export const HeroSection: React.FC = () => {
 
     return (
         <section className="bg-background">
-            <div className="place-items-center lg:max-w-screen-xl gap-8 mx-auto py-12 md:py-20">
+            <div className="grid place-items-center lg:max-w-screen-xl gap-8 mx-auto py-12 md:py-20">
                 <div className="text-center space-y-8">
                     <motion.div
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6 }}
+                        transition={{ duration: 0.9, delay: 1.2 }}
                     >
                         <Badge variant="outline" className="text-sm py-2">
                             <span className="mr-2 text-primary">
                                 <Badge>New</Badge>
                             </span>
-                            <span>Muse now Supports SoundCloud!</span>
+                            <span>Support for Soundcloud</span>
                             <PiSoundcloudLogoFill className="ml-2 w-6 h-6 text-primary" />
                         </Badge>
                     </motion.div>
@@ -44,14 +45,14 @@ export const HeroSection: React.FC = () => {
                         variants={fadeIn}
                         initial="hidden"
                         animate="visible"
-                        className="mx-auto text-center text-4xl md:text-5xl font-medium max-w-screen-lg"
+                        className="mx-auto text-center font-medium max-w-screen-lg md:max-w-screen-md text-2xl md:text-5xl"
                     >
                         <h1>Download and stream the<br />
                             <span className="text-transparent px-2 bg-gradient-to-r from-[#D247BF] to-primary bg-clip-text">
                                 songs and playlists
                             </span>
                             <br />
-                            you love, for free.
+                            you love for free.
                         </h1>
                     </motion.div>
 
@@ -59,10 +60,11 @@ export const HeroSection: React.FC = () => {
                         variants={fadeIn}
                         initial="hidden"
                         animate="visible"
-                        className="md:max-w-screen-sm max-w-screen-sm px-4 mx-auto md:text-lg text-muted-foreground font-light"
+                        className="md:max-w-screen-md max-w-screen-sm px-4 mx-auto text-muted-foreground font-light"
                     >
-                        Enjoy music the way it should be—offline, ad-free, and always free to use.
                         {/* Download your favorite songs, create playlists, and share them with your friends. */}
+                        Enjoy music the way it always should've been—offline, ad-free, and always free to use.
+                        Allow me to welcome you to Muse.
                     </motion.p>
 
                     <motion.div
@@ -72,7 +74,7 @@ export const HeroSection: React.FC = () => {
                         className="space-y-4 md:space-y-0 md:space-x-4"
                     >
                         <Link
-                            to={user ? "/dashboard" : "/login"}
+                            to={user ? "/dashboard" : "/register"}
                             className={cn(
                                 buttonVariants({ variant: "default" }),
                                 "w-5/6 md:w-1/4 font-bold group/arrow"
@@ -88,7 +90,7 @@ export const HeroSection: React.FC = () => {
                             className="w-5/6 md:w-1/4 font-bold"
                         >
                             <Link to="https://github.com/nyumat/muse" target="_blank">
-                                Github repository
+                                Github Repository
                             </Link>
                         </Button>
                     </motion.div>
