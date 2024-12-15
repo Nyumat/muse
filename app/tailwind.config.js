@@ -4,7 +4,7 @@ export default {
     darkMode: ["class"],
     content: ["./index.html", "./src/**/*.{ts,tsx,js,jsx}"],
   theme: {
-  	extend: {
+      extend: {
   		borderRadius: {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
@@ -52,7 +52,8 @@ export default {
   				'5': 'hsl(var(--chart-5))'
   			},
   			sidebar: {
-  				DEFAULT: 'hsl(var(--sidebar-background))',
+                DEFAULT: 'hsl(var(--sidebar-background))',
+                background: 'hsl(var(--sidebar-background))',
   				foreground: 'hsl(var(--sidebar-foreground))',
   				primary: 'hsl(var(--sidebar-primary))',
   				'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',

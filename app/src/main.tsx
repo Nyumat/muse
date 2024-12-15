@@ -10,13 +10,12 @@ import "./index.css";
 const queryClient = new QueryClient();
 
 createRoot(document.getElementById("root")!).render(
-  <BrowserRouter>
-    <ThemeProvider defaultTheme="dark"  storageKey="theme">
-      <QueryClientProvider client={queryClient}>
+    <BrowserRouter>
+        <ThemeProvider defaultTheme="dark" storageKey="theme">
+            <QueryClientProvider client={queryClient}>
                 <MuseRouting />
-                <MiniPlayer />
-      </QueryClientProvider>
-    </ThemeProvider>
-    <Toaster richColors closeButton position="bottom-center" />
-  </BrowserRouter>
+            </QueryClientProvider>
+        </ThemeProvider>
+        <Toaster richColors closeButton position="bottom-center" />
+    </BrowserRouter>
 );

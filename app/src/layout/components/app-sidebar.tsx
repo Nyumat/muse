@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import {
     Collapsible,
     CollapsibleContent,
@@ -27,12 +28,17 @@ import {
     SidebarMenuSubItem,
     useSidebar,
 } from "@/components/ui/sidebar";
+import { useSidebarToggle } from "@/hooks/use-sidebar-toggle";
+import { useStore } from "@/hooks/use-store";
 import { useUser } from "@/hooks/use-user";
+import { cn } from "@/lib/utils";
 import {
     AudioLines,
+    ChevronLeft,
     ChevronRight,
     ListMusic,
     MoreHorizontal,
+    MusicIcon,
     Share,
     Trash2,
     type LucideIcon
@@ -40,8 +46,9 @@ import {
 import * as React from "react";
 import { AiOutlineYoutube } from "react-icons/ai";
 import { IconType } from "react-icons/lib";
-import { PiMusicNoteDuotone, PiSoundcloudLogoDuotone } from "react-icons/pi";
+import { PiMusicNoteDuotone, PiMusicNoteSimpleDuotone, PiSoundcloudLogoDuotone } from "react-icons/pi";
 import { Link } from "react-router";
+import { Menu } from "../static/menu";
 import { NavUser } from "./nav-user";
 
 const sideBarNavList = {
@@ -91,7 +98,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <Sidebar
             variant="inset"
             {...props}
-            className=" backdrop-blur-xs shadow-xl bg-sidebar-primary w-52"
+            className=" backdrop-blur-xs bg-sidebar-primary w-52"
         >
             <SidebarHeader>
                 <SidebarMenu>
@@ -100,12 +107,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                             <Link to="/" title="Muse Logo">
                                 <div className="flex aspect-auto size-24 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                                     <div className="grid flex-1 text-left text-sm leading-tight">
-                                        <img src="/logo.svg" alt="logo" className="dark:hidden" />
-                                        <img
-                                            src="/logo-color.svg"
-                                            alt="muse logo"
-                                            className="hidden dark:block"
-                                        />
+                                        <PiMusicNoteSimpleDuotone className="h-8 w-8" />
                                     </div>
                                 </div>
                             </Link>
@@ -300,5 +302,67 @@ export function NavSecondary({
                 </SidebarMenu>
             </SidebarGroupContent>
         </SidebarGroup>
+    );
+}
+
+interface SidebarToggleProps {
+    isOpen: boolean | undefined;
+    setIsOpen?: () => void;
+}
+
+export function SidebarToggle({ isOpen, setIsOpen }: SidebarToggleProps) {
+    return (
+        <div className="invisible absolute -right-[16px] top-[12px] z-20 lg:visible">
+            <Button
+                onClick={() => setIsOpen?.()}
+                className="h-8 w-8 rounded-md"
+                variant="outline"
+                size="icon"
+            >
+                <ChevronLeft
+                    className={cn(
+                        "h-4 w-4 transition-transform duration-700 ease-in-out",
+                        isOpen === false ? "rotate-180" : "rotate-0",
+                    )}
+                />
+            </Button>
+        </div>
+    );
+}
+
+export function MuseSidebar() {
+    const sidebar = useStore(useSidebarToggle, (state) => state);
+    if (!sidebar) return null;
+    return (
+        <aside
+            className={cn(
+                "bg-background fixed left-0 top-0 z-20 h-screen -translate-x-full transition-[width] duration-300 ease-in-out lg:translate-x-0",
+                sidebar?.isOpen === false ? "w-[90px]" : "w-72",
+            )}
+        >
+            <div className="relative flex h-full flex-col overflow-y-auto px-3 py-4 shadow-md dark:shadow-zinc-800">
+                <Button
+                    className={cn(
+                        "mb-1 transition-transform duration-300 ease-in-out",
+                        sidebar?.isOpen === false ? "translate-x-1" : "translate-x-0",
+                    )}
+                    variant="link"
+                    asChild
+                >
+                    <Link to="/" className="flex items-center gap-2">
+                        <MusicIcon size={32} />
+                        <h1
+                            className={cn(
+                                "font-bold text-lg text-primary",
+                                sidebar?.isOpen === false ? "hidden" : "block",
+                            )}
+                        >
+                            ohits.fun
+                        </h1>
+                    </Link>
+                </Button>
+                <Menu isOpen={sidebar?.isOpen} />
+            </div>
+        </aside>
     );
 }

@@ -84,7 +84,7 @@ export function AddSongDialog() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-purple-500 hover:bg-purple-600">
+        <Button className="bg-primary hover:bg-primary/80 w-full md:w-auto">
           <Plus className="mr-2 h-4 w-4" /> Add Song
         </Button>
       </DialogTrigger>

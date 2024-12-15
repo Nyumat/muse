@@ -26,6 +26,7 @@ app.use(
         },
     })
 );
+
 app.use(
     cors({
         origin: "*", // TODO: Change this to the frontend deployment URL
@@ -57,6 +58,7 @@ const colorfulLogger = (req: Request, res: Response, next: Function) => {
 };
 
 app.use(colorfulLogger);
+
 
 app.use("/users", usersRouter);
 app.use("/auth", authRouter);

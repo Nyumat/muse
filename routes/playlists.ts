@@ -3,6 +3,7 @@ import { authMiddleware } from "@/lib/middleware";
 import Playlist from "@/models/playlist";
 import { SongModel } from "@/models/song";
 import { UserModel } from "@/models/user";
+import { convertToObjectId } from "@/util/urlValidator";
 import { DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import crypto from "crypto";
 import { Request, Response, Router } from "express";
@@ -85,7 +86,7 @@ router.get(
             })
                 .populate("createdBy")
                 .populate("songs");
-            console.log(playlists);
+
             res.json(playlists);
         } catch (error) {
             console.error(error);
@@ -106,7 +107,7 @@ router.get(
             const playlist = await Playlist.findById(id)
                 .populate<{
                     createdBy: UserModel;
-                 }>({
+                }>({
                     path: 'createdBy',
                     select: 'username _id',
                 })
@@ -126,8 +127,6 @@ router.get(
                     });
                 }
             }
-
-            console.log(playlist);
 
             res.json(playlist);
         } catch (error) {
@@ -302,5 +301,52 @@ router.delete(
         }
     }
 );
+
+router.get("/playlists/:userId/most-played", authMiddleware, async (req: Request, res: Response) => {
+    try {
+        const userId = req.auth?._id;
+        if (!userId) return res.status(401).json({ error: "Unauthorized" });
+        const parsedUserId = convertToObjectId(userId);
+        const playlists = await Playlist
+            .find({ createdBy: parsedUserId })
+            .where("playCount").gt(0)
+            .sort({ playCount: -1 })
+            .limit(5)
+            .populate<{ songs: SongModel[] }>("songs");
+
+        for (const playlist of playlists) {
+            for (const song of playlist.songs) {
+                if (song) {
+                    if (song.r2Key && !song.stream_url) {
+                        song.stream_url = await getPresignedUrl({
+                            key: song.r2Key,
+                            bucket: BUCKET_NAME,
+                            expiresIn: 60 * 60 * 24
+                        });
+                    }
+                }
+            }
+        }
+
+        res.json(playlists);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Failed to fetch most played playlists" });
+    }
+});
+
+router.post("/playlists/:id/play", authMiddleware, async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const playlist = await Playlist.findById(id);
+        if (!playlist) return res.status(404).json({ error: "Playlist not found" });
+        playlist.playCount += 1;
+        await playlist.save();
+        res.status(204).send();
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Failed to update playlist play count" });
+    }
+});
 
 export default router;

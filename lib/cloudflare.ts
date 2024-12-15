@@ -38,8 +38,8 @@ interface PresignedUrlParams {
 
 export async function getPresignedUrl({
     key,
+    bucket,
     expiresIn,
-    bucket
 }: PresignedUrlParams) {
     const command = new GetObjectCommand({
         Bucket: bucket,

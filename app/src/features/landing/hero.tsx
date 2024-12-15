@@ -79,7 +79,7 @@ export const HeroSection: React.FC = () => {
 
   return (
     <section className="bg-background">
-      <div className="grid place-items-center lg:max-w-screen-xl gap-8 mx-auto py-12 md:py-20">
+      <div className="place-items-center lg:max-w-screen-xl gap-8 mx-auto py-12 md:py-20">
         <div className="text-center space-y-8">
           <motion.div
             initial={{ opacity: 0, y: -20 }}

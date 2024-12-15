@@ -14,6 +14,7 @@ const playlistSchema = new Schema(
         },
         createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
         songs: [{ type: Schema.Types.ObjectId, ref: "Song" }],
+        playCount: { type: Number, default: 0 },
     },
     { timestamps: true }
 );
@@ -29,6 +30,8 @@ export const playlistZodSchema = z.object({
     visibility: z.enum(["public", "private", "friends"]),
     createdAt: z.string(),
     updatedAt: z.string(),
+    _id: z.string(),
+    playCount: z.number(),
 });
 
 export type PlaylistModel = z.infer<typeof playlistZodSchema>;

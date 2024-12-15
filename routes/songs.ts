@@ -275,7 +275,7 @@ router.get("/api/songs/:type", async (req, res) => {
         const { type } = req.params;
 
         if (!extractors.includes(type)) {
-            return res.status(400).json({ error: "Invalid extractor" });
+            return res.status(400).json({ error: `Invalid extractor type: ${type}` });
         }
 
         const songs = await Song.find({ extractor: type, createdBy: req.auth?._id });
@@ -294,6 +294,56 @@ router.get("/api/songs/:type", async (req, res) => {
     } catch (error) {
         console.error("Error fetching songs:", error);
         res.status(500).json({ error: error });
+    }
+});
+
+router.get("/api/songs/downloads/recent", async (req, res) => {
+    try {
+        const songs = await Song.find({}).sort({ createdAt: -1 }).limit(5);
+
+        for (const song of songs) {
+            if (song.r2Key && !song.stream_url) {
+                song.stream_url = await getPresignedUrl({ key: song.r2Key, bucket: BUCKET_NAME, expiresIn: 60 * 60 * 24 });
+            } else if (!song.r2Key) {
+                // Remove songs that don't have a key
+                await Song.deleteOne({ _id: song._id });
+            }
+        }
+        res.json(songs.map(({ title, uploader, thumbnail, stream_url, _id }) => ({ title, uploader, thumbnail, stream_url, _id })));
+    } catch (error) {
+        console.error("Error fetching songs:", error);
+        res.status(500).json({ error: error });
+    }
+});
+
+// MAJOR TODO: Only update the listening time for the creator of the song.
+// This is a security vulnerability as it allows users to update the listening time of songs they don't own.
+async function updateListeningTime(songId: string, time: number, userId: string) {
+    const song = await Song.findById(songId);
+    if (song) {
+        if (song.createdBy?._id.toString() !== userId.toString()) {
+            return; // partially handle the security vulnerability, but TODO: update client so we don't
+            // have extra requests to update listening time
+        }
+        song.listeningTime += time;
+        await song.save();
+    }
+}
+
+router.post("/api/songs/:id/listen", async (req, res) => {
+    const { id } = req.params;
+    const { time } = req.body;
+
+    if (!req.auth?._id) {
+        return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    try {
+        await updateListeningTime(id, time, req.auth._id);
+        res.status(200).json({ message: "Listening time updated" });
+    } catch (error) {
+        console.error("Error updating listening time:", error);
+        res.status(500).json({ error: "Failed to update listening time" });
     }
 });
 
